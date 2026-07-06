@@ -22,7 +22,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,22 +35,10 @@ function AuthPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setBusy(false);
-      if (error) return toast.error(error.message);
-      navigate({ to: "/admin" });
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/admin` },
-      });
-      setBusy(false);
-      if (error) return toast.error(error.message);
-      toast.success(lang === "th" ? "สร้างบัญชีแล้ว กรุณาเข้าสู่ระบบ" : "Account created. Please sign in.");
-      setMode("login");
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    navigate({ to: "/admin" });
   };
 
   return (
@@ -62,7 +49,7 @@ function AuthPage() {
             <ShieldCheck className="h-5 w-5" />
           </span>
           <div>
-            <h1 className="text-xl font-semibold">{mode === "login" ? t("admin_login") : t("admin_signup")}</h1>
+            <h1 className="text-xl font-semibold">{t("admin_login")}</h1>
             <p className="text-xs text-muted-foreground">{lang === "th" ? "สำหรับเจ้าหน้าที่เท่านั้น" : "Staff access only"}</p>
           </div>
         </div>
@@ -73,26 +60,12 @@ function AuthPage() {
           </div>
           <div className="space-y-1.5">
             <Label>Password</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === "login" ? "current-password" : "new-password"} />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete="current-password" />
           </div>
           <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "…" : mode === "login" ? t("admin_login") : t("admin_signup")}
+            {busy ? "…" : t("admin_login")}
           </Button>
         </form>
-        <button
-          type="button"
-          onClick={() => setMode(mode === "login" ? "signup" : "login")}
-          className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          {mode === "login"
-            ? lang === "th" ? "ยังไม่มีบัญชี? สมัครที่นี่" : "No account? Create one"
-            : lang === "th" ? "มีบัญชีแล้ว? เข้าสู่ระบบ" : "Have an account? Sign in"}
-        </button>
-        <p className="mt-6 rounded-md bg-muted p-3 text-xs text-muted-foreground">
-          {lang === "th"
-            ? "ผู้ใช้คนแรกที่สมัครจะได้รับสิทธิ์ผู้ดูแลระบบโดยอัตโนมัติ"
-            : "The first user to register is automatically granted admin access."}
-        </p>
       </div>
     </div>
   );
