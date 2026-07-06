@@ -33,7 +33,7 @@ export const Route = createFileRoute("/reserve")({
 const USER_STATUSES = ["bachelor", "master", "phd", "staff"] as const;
 
 const formSchema = z.object({
-  room_id: z.string().uuid("Please select a room"),
+  room_ids: z.array(z.string().uuid()).min(1, "Please select at least one room"),
   requester_name: z.string().trim().min(2).max(120),
   requester_email: z.string().trim().email().max(255),
   requester_phone: z.string().trim().min(1).max(30),
