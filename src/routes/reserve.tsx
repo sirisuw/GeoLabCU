@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AvailabilityCalendar } from "@/components/availability-calendar";
 
 type Room = { id: string; code: string; name_en: string; name_th: string; type: "lab" | "pc"; capacity: number };
 
