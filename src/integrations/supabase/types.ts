@@ -176,6 +176,38 @@ export type Database = {
           },
         ]
       }
+      reservation_slots: {
+        Row: {
+          end_at: string | null
+          id: string | null
+          room_id: string | null
+          start_at: string | null
+          status: Database["public"]["Enums"]["reservation_status"] | null
+        }
+        Insert: {
+          end_at?: string | null
+          id?: string | null
+          room_id?: string | null
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
+        }
+        Update: {
+          end_at?: string | null
+          id?: string | null
+          room_id?: string | null
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
