@@ -61,7 +61,13 @@ export function AvailabilityCalendar({
   });
 
   const days = useMemo(() => Array.from({ length: DAYS }, (_, i) => addDays(weekStart, i)), [weekStart]);
-  const locale = lang === "th" ? "th-TH" : "en-US";
+
+  const WEEKDAYS_TH = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+  const WEEKDAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const MONTHS_TH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  const MONTHS_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const weekdays = lang === "th" ? WEEKDAYS_TH : WEEKDAYS_EN;
+  const months = lang === "th" ? MONTHS_TH : MONTHS_EN;
 
   const isBooked = (day: Date, hour: number): Reservation | null => {
     const slotStart = new Date(day);
@@ -117,10 +123,10 @@ export function AvailabilityCalendar({
         <div className="min-w-[640px]">
           <div className="grid" style={{ gridTemplateColumns: `56px repeat(${DAYS}, minmax(0, 1fr))` }}>
             <div />
-            {days.map((d) => (
-              <div key={d.toISOString()} className="px-1 pb-2 text-center text-xs font-medium">
-                <div>{d.toLocaleDateString(locale, { weekday: "short" })}</div>
-                <div className="text-muted-foreground">{d.toLocaleDateString(locale, { day: "numeric", month: "short" })}</div>
+            {days.map((d, i) => (
+              <div key={i} className="px-1 pb-2 text-center text-xs font-medium">
+                <div>{weekdays[i]}</div>
+                <div className="text-muted-foreground">{d.getDate()} {months[d.getMonth()]}</div>
               </div>
             ))}
             {HOURS.map((h) => (
