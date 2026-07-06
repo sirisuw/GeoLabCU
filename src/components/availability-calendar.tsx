@@ -124,8 +124,8 @@ export function AvailabilityCalendar({
               </div>
             ))}
             {HOURS.map((h) => (
-              <>
-                <div key={`h-${h}`} className="pr-2 text-right text-[10px] text-muted-foreground leading-8">
+              <Fragment key={`row-${h}`}>
+                <div className="pr-2 text-right text-[10px] text-muted-foreground leading-8">
                   {String(h).padStart(2, "0")}:00
                 </div>
                 {days.map((d) => {
@@ -149,7 +149,7 @@ export function AvailabilityCalendar({
                     />
                   );
                 })}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
