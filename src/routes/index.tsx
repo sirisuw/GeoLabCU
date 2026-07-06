@@ -46,7 +46,7 @@ function Home() {
           </div>
           <div className="hidden self-end md:block">
             <div className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-5 backdrop-blur">
-              <p className="eyebrow text-gold/80">{lang === "th" ? "ประเภทห้อง" : "Room categories"}</p>
+              <p className="eyebrow text-gold/80">{lang === "th" ? "ภาพรวมห้อง" : "Room Overview"}</p>
               <div className="mt-4 space-y-3">
                 <RoomTypeRow icon={<Microscope className="h-5 w-5" />} title={lang === "th" ? "ห้องทั้งหมด" : "Total rooms"} count="14" />
               </div>
