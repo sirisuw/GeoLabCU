@@ -19,55 +19,70 @@ export type Database = {
           admin_notes: string | null
           advisor_name: string | null
           attendees: number
+          confirmed_calendar: boolean
+          confirmed_contact: boolean
           created_at: string
           department: string | null
           end_at: string
+          equipment: string | null
           id: string
           purpose: string
           requester_email: string
           requester_name: string
           requester_phone: string | null
           room_id: string
+          sample_count: string | null
           start_at: string
           status: Database["public"]["Enums"]["reservation_status"]
           student_id: string | null
           updated_at: string
+          user_status: Database["public"]["Enums"]["user_status"] | null
         }
         Insert: {
           admin_notes?: string | null
           advisor_name?: string | null
           attendees?: number
+          confirmed_calendar?: boolean
+          confirmed_contact?: boolean
           created_at?: string
           department?: string | null
           end_at: string
+          equipment?: string | null
           id?: string
           purpose: string
           requester_email: string
           requester_name: string
           requester_phone?: string | null
           room_id: string
+          sample_count?: string | null
           start_at: string
           status?: Database["public"]["Enums"]["reservation_status"]
           student_id?: string | null
           updated_at?: string
+          user_status?: Database["public"]["Enums"]["user_status"] | null
         }
         Update: {
           admin_notes?: string | null
           advisor_name?: string | null
           attendees?: number
+          confirmed_calendar?: boolean
+          confirmed_contact?: boolean
           created_at?: string
           department?: string | null
           end_at?: string
+          equipment?: string | null
           id?: string
           purpose?: string
           requester_email?: string
           requester_name?: string
           requester_phone?: string | null
           room_id?: string
+          sample_count?: string | null
           start_at?: string
           status?: Database["public"]["Enums"]["reservation_status"]
           student_id?: string | null
           updated_at?: string
+          user_status?: Database["public"]["Enums"]["user_status"] | null
         }
         Relationships: [
           {
@@ -222,6 +237,7 @@ export type Database = {
       app_role: "admin" | "user"
       reservation_status: "pending" | "approved" | "rejected" | "cancelled"
       room_type: "lab" | "pc"
+      user_status: "bachelor" | "master" | "phd" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -352,6 +368,7 @@ export const Constants = {
       app_role: ["admin", "user"],
       reservation_status: ["pending", "approved", "rejected", "cancelled"],
       room_type: ["lab", "pc"],
+      user_status: ["bachelor", "master", "phd", "staff"],
     },
   },
 } as const
