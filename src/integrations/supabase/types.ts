@@ -14,10 +14,73 @@ export type Database = {
   }
   public: {
     Tables: {
+      pending_emails: {
+        Row: {
+          body_html: string
+          created_at: string
+          id: string
+          reservation_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template: string
+          to_email: string
+        }
+        Insert: {
+          body_html: string
+          created_at?: string
+          id?: string
+          reservation_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template: string
+          to_email: string
+        }
+        Update: {
+          body_html?: string
+          created_at?: string
+          id?: string
+          reservation_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_emails_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "public_reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_emails_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservation_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_emails_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           admin_notes: string | null
+          admin_notified_at: string | null
+          advisor_decided_at: string | null
+          advisor_email: string | null
           advisor_name: string | null
+          advisor_status: string
+          advisor_token: string
           attendees: number
           confirmed_calendar: boolean
           confirmed_contact: boolean
@@ -35,12 +98,21 @@ export type Database = {
           start_at: string
           status: Database["public"]["Enums"]["reservation_status"]
           student_id: string | null
+          ta_decided_at: string | null
+          ta_email: string | null
+          ta_status: string
+          ta_token: string
           updated_at: string
           user_status: Database["public"]["Enums"]["user_status"] | null
         }
         Insert: {
           admin_notes?: string | null
+          admin_notified_at?: string | null
+          advisor_decided_at?: string | null
+          advisor_email?: string | null
           advisor_name?: string | null
+          advisor_status?: string
+          advisor_token?: string
           attendees?: number
           confirmed_calendar?: boolean
           confirmed_contact?: boolean
@@ -58,12 +130,21 @@ export type Database = {
           start_at: string
           status?: Database["public"]["Enums"]["reservation_status"]
           student_id?: string | null
+          ta_decided_at?: string | null
+          ta_email?: string | null
+          ta_status?: string
+          ta_token?: string
           updated_at?: string
           user_status?: Database["public"]["Enums"]["user_status"] | null
         }
         Update: {
           admin_notes?: string | null
+          admin_notified_at?: string | null
+          advisor_decided_at?: string | null
+          advisor_email?: string | null
           advisor_name?: string | null
+          advisor_status?: string
+          advisor_token?: string
           attendees?: number
           confirmed_calendar?: boolean
           confirmed_contact?: boolean
@@ -81,6 +162,10 @@ export type Database = {
           start_at?: string
           status?: Database["public"]["Enums"]["reservation_status"]
           student_id?: string | null
+          ta_decided_at?: string | null
+          ta_email?: string | null
+          ta_status?: string
+          ta_token?: string
           updated_at?: string
           user_status?: Database["public"]["Enums"]["user_status"] | null
         }
