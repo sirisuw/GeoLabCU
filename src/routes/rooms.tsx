@@ -1,12 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, MapPin, Microscope, MonitorSmartphone } from "lucide-react";
+import { Users, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import labImg from "@/assets/lab-room.jpg";
-import pcImg from "@/assets/pc-room.jpg";
 
 export const Route = createFileRoute("/rooms")({
   head: () => ({
