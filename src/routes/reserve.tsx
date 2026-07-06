@@ -3,13 +3,15 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { ADVISORS } from "@/lib/advisors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 
@@ -28,18 +30,23 @@ export const Route = createFileRoute("/reserve")({
   component: ReservePage,
 });
 
+const USER_STATUSES = ["bachelor", "master", "phd", "staff"] as const;
+
 const formSchema = z.object({
   room_id: z.string().uuid("Please select a room"),
   requester_name: z.string().trim().min(2).max(120),
   requester_email: z.string().trim().email().max(255),
-  requester_phone: z.string().trim().max(30).optional().or(z.literal("")),
-  department: z.string().trim().max(120).optional().or(z.literal("")),
-  student_id: z.string().trim().max(30).optional().or(z.literal("")),
-  advisor_name: z.string().trim().max(120).optional().or(z.literal("")),
+  requester_phone: z.string().trim().min(1).max(30),
+  user_status: z.enum(USER_STATUSES),
+  advisor_name: z.string().trim().min(1).max(200),
+  equipment: z.string().trim().min(1).max(500),
+  sample_count: z.string().trim().min(1).max(200),
   purpose: z.string().trim().min(3).max(1000),
   attendees: z.coerce.number().int().min(1).max(500),
   start_at: z.string().min(1),
   end_at: z.string().min(1),
+  confirmed_contact: z.literal(true, { errorMap: () => ({ message: "Please confirm you contacted the officer and advisor" }) }),
+  confirmed_calendar: z.literal(true, { errorMap: () => ({ message: "Please confirm you checked the calendar" }) }),
 });
 
 function ReservePage() {
@@ -62,16 +69,19 @@ function ReservePage() {
     requester_name: "",
     requester_email: "",
     requester_phone: "",
-    department: "",
-    student_id: "",
+    user_status: "" as "" | (typeof USER_STATUSES)[number],
     advisor_name: "",
+    equipment: "",
+    sample_count: "",
     purpose: "",
     attendees: "1",
     start_at: "",
     end_at: "",
+    confirmed_contact: false,
+    confirmed_calendar: false,
   });
 
-  const set = <K extends keyof typeof form>(k: K, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,15 +101,18 @@ function ReservePage() {
       room_id: payload.room_id,
       requester_name: payload.requester_name,
       requester_email: payload.requester_email,
-      requester_phone: payload.requester_phone || null,
-      department: payload.department || null,
-      student_id: payload.student_id || null,
-      advisor_name: payload.advisor_name || null,
+      requester_phone: payload.requester_phone,
+      advisor_name: payload.advisor_name,
       purpose: payload.purpose,
       attendees: payload.attendees,
       start_at: new Date(payload.start_at).toISOString(),
       end_at: new Date(payload.end_at).toISOString(),
-    });
+      user_status: payload.user_status,
+      equipment: payload.equipment,
+      sample_count: payload.sample_count,
+      confirmed_contact: payload.confirmed_contact,
+      confirmed_calendar: payload.confirmed_calendar,
+    } as never);
     setSubmitting(false);
     if (error) {
       const msg = error.message || "";
@@ -112,8 +125,9 @@ function ReservePage() {
     }
     toast.success(t("f_success"));
     setSuccess(true);
-    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", purpose: "", start_at: "", end_at: "" }));
+    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", equipment: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
   };
+
 
   if (success) {
     return (
