@@ -153,9 +153,110 @@ function AdminPage() {
           ))}
         </div>
       )}
+
+      <PendingEmailsPanel />
     </div>
   );
 }
+
+type PendingEmail = {
+  id: string;
+  reservation_id: string | null;
+  to_email: string;
+  subject: string;
+  body_html: string;
+  template: string;
+  status: string;
+  created_at: string;
+  sent_at: string | null;
+};
+
+function PendingEmailsPanel() {
+  const { lang } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const { data: emails = [], isLoading } = useQuery({
+    queryKey: ["pending_emails"],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pending_emails" as never)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data as PendingEmail[];
+    },
+  });
+
+  return (
+    <section className="mt-12 rounded-xl border border-border bg-card">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between p-5 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <Inbox className="h-5 w-5 text-gold" />
+          <div>
+            <h2 className="text-lg font-semibold">
+              {lang === "th" ? "อีเมลรอส่ง (ตัวอย่าง)" : "Pending emails (drafts)"}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {lang === "th"
+                ? "อีเมลจะถูกส่งจริงหลังตั้งค่าโดเมนอีเมล"
+                : "These will send once an email domain is configured"}
+            </p>
+          </div>
+        </div>
+        {open ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+      </button>
+
+      {open && (
+        <div className="border-t border-border p-5">
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">…</p>
+          ) : emails.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {lang === "th" ? "ยังไม่มีอีเมลรอส่ง" : "No pending emails yet."}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {emails.map((e) => (
+                <div key={e.id} className="rounded-md border border-border bg-background">
+                  <button
+                    onClick={() => setExpandedId((id) => (id === e.id ? null : e.id))}
+                    className="flex w-full items-center justify-between gap-3 p-3 text-left text-sm"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono uppercase">
+                          {e.template}
+                        </span>
+                        <span className="truncate font-medium">{e.to_email}</span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{e.subject}</p>
+                    </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(e.created_at).toLocaleString()}
+                    </span>
+                  </button>
+                  {expandedId === e.id && (
+                    <div
+                      className="border-t border-border p-4 text-sm prose prose-sm max-w-none dark:prose-invert"
+                      dangerouslySetInnerHTML={{ __html: e.body_html }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return <div className="flex items-center gap-1.5 text-muted-foreground"><span className="text-gold">{icon}</span>{text}</div>;
