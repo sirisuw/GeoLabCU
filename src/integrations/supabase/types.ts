@@ -99,39 +99,54 @@ export type Database = {
           active: boolean
           capacity: number
           code: string
+          contact_phone: string | null
           created_at: string
           description_en: string | null
           description_th: string | null
+          equipment: Json
+          google_calendar_url: string | null
+          head_of_lab: string | null
           id: string
           location: string | null
           name_en: string
           name_th: string
+          staff_in_charge: string | null
           type: Database["public"]["Enums"]["room_type"]
         }
         Insert: {
           active?: boolean
           capacity?: number
           code: string
+          contact_phone?: string | null
           created_at?: string
           description_en?: string | null
           description_th?: string | null
+          equipment?: Json
+          google_calendar_url?: string | null
+          head_of_lab?: string | null
           id?: string
           location?: string | null
           name_en: string
           name_th: string
+          staff_in_charge?: string | null
           type: Database["public"]["Enums"]["room_type"]
         }
         Update: {
           active?: boolean
           capacity?: number
           code?: string
+          contact_phone?: string | null
           created_at?: string
           description_en?: string | null
           description_th?: string | null
+          equipment?: Json
+          google_calendar_url?: string | null
+          head_of_lab?: string | null
           id?: string
           location?: string | null
           name_en?: string
           name_th?: string
+          staff_in_charge?: string | null
           type?: Database["public"]["Enums"]["room_type"]
         }
         Relationships: []
