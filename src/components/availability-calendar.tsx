@@ -132,34 +132,38 @@ export function AvailabilityCalendar({
                 <div className="text-muted-foreground">{d.getDate()} {months[d.getMonth()]}</div>
               </div>
             ))}
-            {HOURS.map((h) => (
-              <Fragment key={`row-${h}`}>
-                <div className="pr-2 text-right text-[10px] text-muted-foreground leading-8">
-                  {String(h).padStart(2, "0")}:00
-                </div>
-                {days.map((d) => {
-                  const r = roomId ? isBooked(d, h) : null;
-                  const disabled = !roomId || !!r;
-                  const cls = !roomId
-                    ? "bg-muted/40"
-                    : r
-                    ? r.status === "approved"
-                      ? "bg-destructive/70"
-                      : "bg-gold/70"
-                    : "bg-muted hover:bg-primary/20 cursor-pointer";
-                  return (
-                    <button
-                      key={`c-${d.toISOString()}-${h}`}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => pickSlot(d, h)}
-                      title={r ? (r.status === "approved" ? t("cal_booked") : t("cal_pending")) : t("cal_free")}
-                      className={cn("m-[1px] h-8 rounded-sm border border-border/50 transition-colors", cls)}
-                    />
-                  );
-                })}
-              </Fragment>
-            ))}
+            {SLOTS.map(({ hour, minute }) => {
+              const label = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+              const isHourStart = minute === 0;
+              return (
+                <Fragment key={`row-${label}`}>
+                  <div className={cn("pr-2 text-right text-[10px] leading-7", isHourStart ? "text-muted-foreground" : "text-muted-foreground/50")}>
+                    {isHourStart ? label : ""}
+                  </div>
+                  {days.map((d) => {
+                    const r = roomId ? isBooked(d, hour, minute) : null;
+                    const disabled = !roomId || !!r;
+                    const cls = !roomId
+                      ? "bg-muted/40"
+                      : r
+                      ? r.status === "approved"
+                        ? "bg-destructive/70"
+                        : "bg-gold/70"
+                      : "bg-muted hover:bg-primary/20 cursor-pointer";
+                    return (
+                      <button
+                        key={`c-${d.toISOString()}-${label}`}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => pickSlot(d, hour, minute)}
+                        title={`${label} — ${r ? (r.status === "approved" ? t("cal_booked") : t("cal_pending")) : t("cal_free")}`}
+                        className={cn("m-[1px] h-7 rounded-sm border transition-colors", isHourStart ? "border-border/50" : "border-border/20", cls)}
+                      />
+                    );
+                  })}
+                </Fragment>
+              );
+            })}
           </div>
         </div>
       </div>
