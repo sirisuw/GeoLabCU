@@ -102,7 +102,12 @@ function ReservePage() {
     });
     setSubmitting(false);
     if (error) {
-      toast.error(t("f_error") + " " + error.message);
+      const msg = error.message || "";
+      if (/already booked/i.test(msg)) {
+        toast.error(t("f_conflict"));
+      } else {
+        toast.error(t("f_error") + " " + msg);
+      }
       return;
     }
     toast.success(t("f_success"));
