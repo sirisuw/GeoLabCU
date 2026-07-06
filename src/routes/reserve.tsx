@@ -181,7 +181,7 @@ function ReservePage() {
             </Field>
             <Field label={t("f_user_status")} required>
               <Select value={form.user_status} onValueChange={(v) => set("user_status", v as (typeof USER_STATUSES)[number])}>
-                <SelectTrigger><SelectValue placeholder={t("f_room_ph")} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("f_user_status_ph")} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bachelor">{t("f_us_bachelor")}</SelectItem>
                   <SelectItem value="master">{t("f_us_master")}</SelectItem>
