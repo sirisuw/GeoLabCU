@@ -123,10 +123,10 @@ export function AvailabilityCalendar({
         <div className="min-w-[640px]">
           <div className="grid" style={{ gridTemplateColumns: `56px repeat(${DAYS}, minmax(0, 1fr))` }}>
             <div />
-            {days.map((d) => (
-              <div key={d.toISOString()} className="px-1 pb-2 text-center text-xs font-medium">
-                <div>{d.toLocaleDateString(locale, { weekday: "short" })}</div>
-                <div className="text-muted-foreground">{d.toLocaleDateString(locale, { day: "numeric", month: "short" })}</div>
+            {days.map((d, i) => (
+              <div key={i} className="px-1 pb-2 text-center text-xs font-medium">
+                <div>{weekdays[i]}</div>
+                <div className="text-muted-foreground">{d.getDate()} {months[d.getMonth()]}</div>
               </div>
             ))}
             {HOURS.map((h) => (
