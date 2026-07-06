@@ -31,20 +31,18 @@ function ApprovePage() {
 
   const isTA = role === "ta";
   const isAdvisor = role === "advisor";
-  const tokenCol = isTA ? "ta_token" : "advisor_token";
   const statusCol = isTA ? "ta_status" : "advisor_status";
-  const decidedCol = isTA ? "ta_decided_at" : "advisor_decided_at";
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["approval", role, token],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reservations")
-        .select("id, requester_name, requester_email, purpose, start_at, end_at, attendees, advisor_name, ta_status, advisor_status, status")
-        .eq(tokenCol, token)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc(
+        "get_reservation_by_token" as never,
+        { _role: role, _token: token } as never,
+      );
       if (error) throw error;
-      return data as Reservation | null;
+      const row = Array.isArray(data) ? (data[0] as Reservation | undefined) : (data as Reservation | null);
+      return row ?? null;
     },
     enabled: isTA || isAdvisor,
   });
@@ -65,10 +63,10 @@ function ApprovePage() {
 
   const decide = async (decision: "approved" | "rejected") => {
     setSubmitting(true);
-    const { error } = await supabase
-      .from("reservations")
-      .update({ [statusCol]: decision, [decidedCol]: new Date().toISOString() } as never)
-      .eq(tokenCol, token);
+    const { error } = await supabase.rpc(
+      "decide_reservation_by_token" as never,
+      { _role: role, _token: token, _decision: decision } as never,
+    );
     setSubmitting(false);
     if (error) return alert(error.message);
     setDone(decision);

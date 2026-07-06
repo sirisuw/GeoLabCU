@@ -53,6 +53,13 @@ export type Database = {
             foreignKeyName: "pending_emails_reservation_id_fkey"
             columns: ["reservation_id"]
             isOneToOne: false
+            referencedRelation: "public_reservation_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_emails_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
             referencedRelation: "public_reservations"
             referencedColumns: ["id"]
           },
@@ -259,6 +266,38 @@ export type Database = {
       }
     }
     Views: {
+      public_reservation_slots: {
+        Row: {
+          end_at: string | null
+          id: string | null
+          room_id: string | null
+          start_at: string | null
+          status: Database["public"]["Enums"]["reservation_status"] | null
+        }
+        Insert: {
+          end_at?: string | null
+          id?: string | null
+          room_id?: string | null
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
+        }
+        Update: {
+          end_at?: string | null
+          id?: string | null
+          room_id?: string | null
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_reservations: {
         Row: {
           end_at: string | null
@@ -325,6 +364,26 @@ export type Database = {
       }
     }
     Functions: {
+      decide_reservation_by_token: {
+        Args: { _decision: string; _role: string; _token: string }
+        Returns: boolean
+      }
+      get_reservation_by_token: {
+        Args: { _role: string; _token: string }
+        Returns: {
+          advisor_name: string
+          advisor_status: string
+          attendees: number
+          end_at: string
+          id: string
+          purpose: string
+          requester_email: string
+          requester_name: string
+          start_at: string
+          status: string
+          ta_status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

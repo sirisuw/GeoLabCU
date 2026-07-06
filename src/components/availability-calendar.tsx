@@ -53,14 +53,23 @@ export function AvailabilityCalendar({
     queryKey: ["room-availability", roomId, weekStart.toISOString()],
     enabled: !!roomId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reservations")
+      const { data, error } = await (supabase as unknown as {
+        from: (t: string) => {
+          select: (c: string) => {
+            eq: (k: string, v: string) => {
+              lt: (k: string, v: string) => {
+                gt: (k: string, v: string) => Promise<{ data: Reservation[] | null; error: unknown }>;
+              };
+            };
+          };
+        };
+      })
+        .from("public_reservation_slots")
         .select("id, start_at, end_at, status")
         .eq("room_id", roomId!)
-        .in("status", ["approved", "pending"])
         .lt("start_at", weekEnd.toISOString())
         .gt("end_at", weekStart.toISOString());
-      if (error) throw error;
+      if (error) throw error as Error;
       return data as Reservation[];
     },
   });
