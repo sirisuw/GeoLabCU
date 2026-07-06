@@ -48,8 +48,8 @@ function Home() {
             <div className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-5 backdrop-blur">
               <p className="eyebrow text-gold/80">{lang === "th" ? "ประเภทห้อง" : "Room categories"}</p>
               <div className="mt-4 space-y-3">
-                <RoomTypeRow icon={<Microscope className="h-5 w-5" />} title={t("type_lab")} count="4" />
-                <RoomTypeRow icon={<MonitorSmartphone className="h-5 w-5" />} title={t("type_pc")} count="3" />
+                <RoomTypeRow icon={<Microscope className="h-5 w-5" />} title={t("type_lab")} count="13" />
+                <RoomTypeRow icon={<MonitorSmartphone className="h-5 w-5" />} title={t("type_pc")} count="1" />
               </div>
             </div>
           </div>
