@@ -1,12 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, MapPin, Microscope, MonitorSmartphone } from "lucide-react";
+import { Users, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import labImg from "@/assets/lab-room.jpg";
-import pcImg from "@/assets/pc-room.jpg";
 
 export const Route = createFileRoute("/rooms")({
   head: () => ({
@@ -80,20 +78,6 @@ function RoomsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => (
             <article key={r.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:border-gold hover:shadow-md">
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={r.type === "lab" ? labImg : pcImg}
-                  alt=""
-                  loading="lazy"
-                  width={1600}
-                  height={1000}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-                <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-medium text-primary-foreground backdrop-blur">
-                  {r.type === "lab" ? <Microscope className="h-3 w-3" /> : <MonitorSmartphone className="h-3 w-3" />}
-                  {r.type === "lab" ? t("type_lab") : t("type_pc")}
-                </span>
-              </div>
               <div className="flex flex-1 flex-col p-5">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="font-display text-xs font-semibold uppercase tracking-widest text-gold">{r.code}</span>
