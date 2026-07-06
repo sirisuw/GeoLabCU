@@ -176,19 +176,41 @@ function ReservePage() {
             <Field label={t("f_email")} required>
               <Input type="email" value={form.requester_email} onChange={(e) => set("requester_email", e.target.value)} maxLength={255} required />
             </Field>
-            <Field label={t("f_phone")}>
-              <Input value={form.requester_phone} onChange={(e) => set("requester_phone", e.target.value)} maxLength={30} />
+            <Field label={t("f_phone")} required>
+              <Input value={form.requester_phone} onChange={(e) => set("requester_phone", e.target.value)} maxLength={30} required />
             </Field>
-            <Field label={t("f_department")}>
-              <Input value={form.department} onChange={(e) => set("department", e.target.value)} maxLength={120} />
+            <Field label={t("f_user_status")} required>
+              <Select value={form.user_status} onValueChange={(v) => set("user_status", v as (typeof USER_STATUSES)[number])}>
+                <SelectTrigger><SelectValue placeholder={t("f_room_ph")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bachelor">{t("f_us_bachelor")}</SelectItem>
+                  <SelectItem value="master">{t("f_us_master")}</SelectItem>
+                  <SelectItem value="phd">{t("f_us_phd")}</SelectItem>
+                  <SelectItem value="staff">{t("f_us_staff")}</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
-            <Field label={t("f_student_id")}>
-              <Input value={form.student_id} onChange={(e) => set("student_id", e.target.value)} maxLength={30} />
-            </Field>
-            <Field label={t("f_advisor")}>
-              <Input value={form.advisor_name} onChange={(e) => set("advisor_name", e.target.value)} maxLength={120} />
+            <Field label={t("f_advisor")} required>
+              <Select value={form.advisor_name} onValueChange={(v) => set("advisor_name", v)}>
+                <SelectTrigger><SelectValue placeholder={t("f_advisor_ph")} /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {ADVISORS.map((a) => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </div>
+
+          <Field label={t("f_equipment")} required>
+            <Textarea value={form.equipment} onChange={(e) => set("equipment", e.target.value)} rows={2} maxLength={500} required />
+            <p className="text-xs text-muted-foreground">{t("f_equipment_hint")}</p>
+          </Field>
+
+          <Field label={t("f_samples")} required>
+            <Input value={form.sample_count} onChange={(e) => set("sample_count", e.target.value)} maxLength={200} required />
+            <p className="text-xs text-muted-foreground">{t("f_samples_hint")}</p>
+          </Field>
 
           <div className="grid gap-4 md:grid-cols-3">
             <Field label={t("f_start")} required>
@@ -206,9 +228,31 @@ function ReservePage() {
             <Textarea value={form.purpose} onChange={(e) => set("purpose", e.target.value)} rows={4} maxLength={1000} required />
           </Field>
 
+          <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
+            <p className="text-sm font-medium">{t("f_confirm_title")} <span className="text-destructive">*</span></p>
+            <label className="flex items-start gap-3 text-sm cursor-pointer">
+              <Checkbox checked={form.confirmed_contact} onCheckedChange={(v) => set("confirmed_contact", v === true)} className="mt-0.5" />
+              <span>{t("f_confirm_contact")}</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm cursor-pointer">
+              <Checkbox checked={form.confirmed_calendar} onCheckedChange={(v) => set("confirmed_calendar", v === true)} className="mt-0.5" />
+              <span>{t("f_confirm_calendar")}</span>
+            </label>
+          </div>
+
+          <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 text-sm space-y-2">
+            <p className="flex items-center gap-2 font-medium"><Info className="h-4 w-4 text-gold" />{t("f_rules_title")}</p>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>{t("f_rules_1")}</li>
+              <li>{t("f_rules_2")}</li>
+              <li>{t("f_rules_3")}</li>
+            </ul>
+          </div>
+
           <Button type="submit" size="lg" disabled={submitting} className="w-full md:w-auto">
             {submitting ? t("f_sending") : t("f_submit")}
           </Button>
+
         </form>
       </div>
     </div>
