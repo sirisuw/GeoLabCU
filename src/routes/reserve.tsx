@@ -33,7 +33,7 @@ export const Route = createFileRoute("/reserve")({
 const USER_STATUSES = ["bachelor", "master", "phd", "staff"] as const;
 
 const formSchema = z.object({
-  room_id: z.string().uuid("Please select a room"),
+  room_ids: z.array(z.string().uuid()).min(1, "Please select at least one room"),
   requester_name: z.string().trim().min(2).max(120),
   requester_email: z.string().trim().email().max(255),
   requester_phone: z.string().trim().min(1).max(30),
@@ -65,7 +65,7 @@ function ReservePage() {
   });
 
   const [form, setForm] = useState({
-    room_id: preselectedRoom ?? "",
+    room_ids: preselectedRoom ? [preselectedRoom] : ([] as string[]),
     requester_name: "",
     requester_email: "",
     requester_phone: "",
@@ -97,8 +97,8 @@ function ReservePage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("reservations").insert({
-      room_id: payload.room_id,
+    const rows = payload.room_ids.map((room_id) => ({
+      room_id,
       requester_name: payload.requester_name,
       requester_email: payload.requester_email,
       requester_phone: payload.requester_phone,
@@ -112,15 +112,11 @@ function ReservePage() {
       sample_count: payload.sample_count,
       confirmed_contact: payload.confirmed_contact,
       confirmed_calendar: payload.confirmed_calendar,
-    } as never);
+    }));
+    const { error } = await supabase.from("reservations").insert(rows as never);
     setSubmitting(false);
     if (error) {
-      const msg = error.message || "";
-      if (/already booked/i.test(msg)) {
-        toast.error(t("f_conflict"));
-      } else {
-        toast.error(t("f_error") + " " + msg);
-      }
+      toast.error(t("f_error") + " " + (error.message || ""));
       return;
     }
     toast.success(t("f_success"));
@@ -151,23 +147,45 @@ function ReservePage() {
 
         <form onSubmit={onSubmit} className="mt-10 space-y-6 rounded-2xl border border-border bg-card p-6 md:p-8">
           <Field label={t("f_room")} required>
-            <Select value={form.room_id} onValueChange={(v) => set("room_id", v)}>
-              <SelectTrigger><SelectValue placeholder={t("f_room_ph")} /></SelectTrigger>
-              <SelectContent>
-                {rooms.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    <span className="font-display text-xs font-semibold text-gold mr-2">{r.code}</span>
-                    {lang === "th" ? r.name_th : r.name_en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="rounded-lg border border-border bg-background p-3 max-h-64 overflow-y-auto space-y-2">
+              {rooms.length === 0 && (
+                <p className="text-sm text-muted-foreground">{lang === "th" ? "กำลังโหลด…" : "Loading…"}</p>
+              )}
+              {rooms.map((r) => {
+                const checked = form.room_ids.includes(r.id);
+                return (
+                  <label key={r.id} className="flex items-center gap-3 text-sm cursor-pointer rounded-md px-2 py-1.5 hover:bg-muted/50">
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={(v) =>
+                        setForm((f) => ({
+                          ...f,
+                          room_ids: v === true
+                            ? [...f.room_ids, r.id]
+                            : f.room_ids.filter((id) => id !== r.id),
+                        }))
+                      }
+                    />
+                    <span className="font-display text-xs font-semibold text-gold">{r.code}</span>
+                    <span>{lang === "th" ? r.name_th : r.name_en}</span>
+                  </label>
+                );
+              })}
+            </div>
+            {form.room_ids.length > 1 && (
+              <p className="text-xs text-muted-foreground">
+                {lang === "th"
+                  ? `เลือกแล้ว ${form.room_ids.length} ห้อง — จะสร้างคำขอแยกกันต่อห้อง`
+                  : `${form.room_ids.length} rooms selected — a separate request will be created per room`}
+              </p>
+            )}
           </Field>
 
           <AvailabilityCalendar
-            roomId={form.room_id || undefined}
+            roomId={form.room_ids[0]}
             onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
           />
+
 
           <div className="grid gap-4 md:grid-cols-2">
             <Field label={t("f_name")} required>
