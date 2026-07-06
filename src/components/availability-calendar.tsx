@@ -74,11 +74,10 @@ export function AvailabilityCalendar({
   const weekdays = lang === "th" ? WEEKDAYS_TH : WEEKDAYS_EN;
   const months = lang === "th" ? MONTHS_TH : MONTHS_EN;
 
-  const isBooked = (day: Date, hour: number): Reservation | null => {
+  const isBooked = (day: Date, hour: number, minute: number): Reservation | null => {
     const slotStart = new Date(day);
-    slotStart.setHours(hour, 0, 0, 0);
-    const slotEnd = new Date(slotStart);
-    slotEnd.setHours(hour + 1);
+    slotStart.setHours(hour, minute, 0, 0);
+    const slotEnd = new Date(slotStart.getTime() + SLOT_MINUTES * 60_000);
     for (const r of reservations) {
       const s = new Date(r.start_at);
       const e = new Date(r.end_at);
@@ -87,12 +86,11 @@ export function AvailabilityCalendar({
     return null;
   };
 
-  const pickSlot = (day: Date, hour: number) => {
+  const pickSlot = (day: Date, hour: number, minute: number) => {
     if (!onPickSlot) return;
     const s = new Date(day);
-    s.setHours(hour, 0, 0, 0);
-    const e = new Date(s);
-    e.setHours(hour + 1);
+    s.setHours(hour, minute, 0, 0);
+    const e = new Date(s.getTime() + SLOT_MINUTES * 60_000);
     onPickSlot(formatLocalInput(s), formatLocalInput(e));
   };
 
