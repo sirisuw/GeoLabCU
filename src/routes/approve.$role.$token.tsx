@@ -31,9 +31,7 @@ function ApprovePage() {
 
   const isTA = role === "ta";
   const isAdvisor = role === "advisor";
-  const tokenCol = isTA ? "ta_token" : "advisor_token";
   const statusCol = isTA ? "ta_status" : "advisor_status";
-  const decidedCol = isTA ? "ta_decided_at" : "advisor_decided_at";
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["approval", role, token],
