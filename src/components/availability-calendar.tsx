@@ -61,7 +61,13 @@ export function AvailabilityCalendar({
   });
 
   const days = useMemo(() => Array.from({ length: DAYS }, (_, i) => addDays(weekStart, i)), [weekStart]);
-  const locale = lang === "th" ? "th-TH" : "en-US";
+
+  const WEEKDAYS_TH = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+  const WEEKDAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const MONTHS_TH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  const MONTHS_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const weekdays = lang === "th" ? WEEKDAYS_TH : WEEKDAYS_EN;
+  const months = lang === "th" ? MONTHS_TH : MONTHS_EN;
 
   const isBooked = (day: Date, hour: number): Reservation | null => {
     const slotStart = new Date(day);
