@@ -65,7 +65,7 @@ function ReservePage() {
   });
 
   const [form, setForm] = useState({
-    room_id: preselectedRoom ?? "",
+    room_ids: preselectedRoom ? [preselectedRoom] : ([] as string[]),
     requester_name: "",
     requester_email: "",
     requester_phone: "",
