@@ -22,6 +22,7 @@ export function SiteHeader() {
             { to: "/", k: "nav_home" as const },
             { to: "/rooms", k: "nav_rooms" as const },
             { to: "/reserve", k: "nav_reserve" as const },
+            { to: "/rules", k: "nav_rules" as const },
             { to: "/admin", k: "nav_admin" as const },
           ].map((l) => (
             <Link
@@ -65,9 +66,26 @@ export function SiteFooter() {
   const { t } = useI18n();
   return (
     <footer className="mt-24 border-t border-border/60 bg-surface">
-      <div className="container-page flex flex-col gap-2 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-        <p>{t("footer_dept")}</p>
-        <p className="font-display text-xs uppercase tracking-widest">© {new Date().getFullYear()} Geo Labs</p>
+      <div className="container-page grid gap-8 py-10 md:grid-cols-3">
+        <div>
+          <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">Geo Labs</p>
+          <p className="mt-2 text-sm">{t("footer_dept")}</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t("footer_hours")}</p>
+        </div>
+        <div>
+          <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">{t("footer_contact_title")}</p>
+          <ul className="mt-2 space-y-1 text-sm">
+            <li>{t("footer_phone")}: <a href="tel:022185443" className="hover:text-primary">02-218-5443</a></li>
+            <li>{t("footer_email")}: <a href="mailto:geoculab@gmail.com" className="hover:text-primary">geoculab@gmail.com</a></li>
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">{t("footer_external_note")}</p>
+        </div>
+        <div className="md:text-right">
+          <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">
+            © {new Date().getFullYear()}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Chulalongkorn University</p>
+        </div>
       </div>
     </footer>
   );
