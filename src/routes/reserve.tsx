@@ -150,6 +150,11 @@ function ReservePage() {
             </Select>
           </Field>
 
+          <AvailabilityCalendar
+            roomId={form.room_id || undefined}
+            onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
+          />
+
           <div className="grid gap-4 md:grid-cols-2">
             <Field label={t("f_name")} required>
               <Input value={form.requester_name} onChange={(e) => set("requester_name", e.target.value)} maxLength={120} required />
