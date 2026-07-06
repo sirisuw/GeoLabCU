@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AvailabilityCalendar } from "@/components/availability-calendar";
 
 type Room = { id: string; code: string; name_en: string; name_th: string; type: "lab" | "pc"; capacity: number };
 
@@ -101,7 +102,12 @@ function ReservePage() {
     });
     setSubmitting(false);
     if (error) {
-      toast.error(t("f_error") + " " + error.message);
+      const msg = error.message || "";
+      if (/already booked/i.test(msg)) {
+        toast.error(t("f_conflict"));
+      } else {
+        toast.error(t("f_error") + " " + msg);
+      }
       return;
     }
     toast.success(t("f_success"));
@@ -143,6 +149,11 @@ function ReservePage() {
               </SelectContent>
             </Select>
           </Field>
+
+          <AvailabilityCalendar
+            roomId={form.room_id || undefined}
+            onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             <Field label={t("f_name")} required>

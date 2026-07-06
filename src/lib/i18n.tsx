@@ -54,6 +54,17 @@ export const dict = {
   f_sending: { th: "กำลังส่ง…", en: "Sending…" },
   f_success: { th: "ส่งคำขอเรียบร้อย ทีมงานจะติดต่อกลับทางอีเมล", en: "Request submitted. We'll contact you by email." },
   f_error: { th: "ส่งไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง", en: "Could not submit. Please check your input." },
+  f_conflict: { th: "ช่วงเวลานี้ถูกจองแล้ว กรุณาเลือกเวลาอื่น", en: "This time slot is already booked. Please choose another." },
+
+  cal_title: { th: "ตารางว่างของห้อง", en: "Room availability" },
+  cal_hint: { th: "เลือกห้องเพื่อดูช่วงเวลาที่ถูกจองแล้ว", en: "Select a room to see booked time slots." },
+  cal_prev: { th: "สัปดาห์ก่อน", en: "Previous week" },
+  cal_next: { th: "สัปดาห์ถัดไป", en: "Next week" },
+  cal_today: { th: "วันนี้", en: "Today" },
+  cal_booked: { th: "ถูกจอง", en: "Booked" },
+  cal_pending: { th: "รออนุมัติ", en: "Pending" },
+  cal_free: { th: "ว่าง", en: "Free" },
+  cal_click_free: { th: "คลิกช่องว่างเพื่อเลือกเวลาเริ่มต้น", en: "Click a free slot to prefill start time." },
 
   admin_title: { th: "แดชบอร์ดผู้ดูแล", en: "Admin dashboard" },
   admin_sub: { th: "จัดการคำขอจองห้อง", en: "Manage reservation requests." },
