@@ -10,7 +10,12 @@ type Reservation = { id: string; start_at: string; end_at: string; status: strin
 
 const HOUR_START = 8;
 const HOUR_END = 20; // exclusive
-const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
+const SLOT_MINUTES = 30;
+const SLOTS_PER_HOUR = 60 / SLOT_MINUTES;
+const SLOTS = Array.from(
+  { length: (HOUR_END - HOUR_START) * SLOTS_PER_HOUR },
+  (_, i) => ({ hour: HOUR_START + Math.floor(i / SLOTS_PER_HOUR), minute: (i % SLOTS_PER_HOUR) * SLOT_MINUTES }),
+);
 const DAYS = 7;
 
 function startOfWeek(d: Date) {
