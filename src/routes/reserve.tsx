@@ -97,8 +97,8 @@ function ReservePage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("reservations").insert({
-      room_id: payload.room_id,
+    const rows = payload.room_ids.map((room_id) => ({
+      room_id,
       requester_name: payload.requester_name,
       requester_email: payload.requester_email,
       requester_phone: payload.requester_phone,
@@ -112,15 +112,11 @@ function ReservePage() {
       sample_count: payload.sample_count,
       confirmed_contact: payload.confirmed_contact,
       confirmed_calendar: payload.confirmed_calendar,
-    } as never);
+    }));
+    const { error } = await supabase.from("reservations").insert(rows as never);
     setSubmitting(false);
     if (error) {
-      const msg = error.message || "";
-      if (/already booked/i.test(msg)) {
-        toast.error(t("f_conflict"));
-      } else {
-        toast.error(t("f_error") + " " + msg);
-      }
+      toast.error(t("f_error") + " " + (error.message || ""));
       return;
     }
     toast.success(t("f_success"));
