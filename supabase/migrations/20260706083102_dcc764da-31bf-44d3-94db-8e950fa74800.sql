@@ -1,0 +1,1 @@
+UPDATE public.rooms SET location = 'Room 325A' WHERE code = '325A';
