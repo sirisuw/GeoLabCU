@@ -119,6 +119,14 @@ function ReservePage() {
       toast.error(lang === "th" ? "เวลาสิ้นสุดต้องหลังเวลาเริ่มต้น" : "End time must be after start time");
       return;
     }
+    if (new Date(payload.start_at) < earliestAllowed) {
+      toast.error(
+        lang === "th"
+          ? "หากจองหลัง 7:00 น. เริ่มใช้ห้องได้ตั้งแต่วันถัดไปเท่านั้น"
+          : "Bookings made after 7:00 AM can only start from the next day.",
+      );
+      return;
+    }
     // Per-room equipment validation
     for (const rid of payload.room_ids) {
       const text = buildEquipmentText(rid);
