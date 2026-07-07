@@ -146,6 +146,10 @@ export function AvailabilityCalendar({
         <LegendDot className="bg-destructive/70" label={t("cal_booked")} />
       </div>
 
+      <p className="mt-2 rounded-md border border-gold/30 bg-gold/5 px-3 py-2 text-xs text-muted-foreground">
+        {t("cal_cutoff_rule")}
+      </p>
+
       <div className="mt-4 overflow-x-auto">
         <div className="min-w-[640px]">
           <div className="grid" style={{ gridTemplateColumns: `56px repeat(${DAYS}, minmax(0, 1fr))` }}>
@@ -166,9 +170,12 @@ export function AvailabilityCalendar({
                   </div>
                   {days.map((d) => {
                     const r = roomId ? isBooked(d, hour, minute) : null;
-                    const disabled = !roomId || !!r;
+                    const cutoff = isBeforeCutoff(d, hour, minute);
+                    const disabled = !roomId || !!r || cutoff;
                     const cls = !roomId
                       ? "bg-muted/40"
+                      : cutoff
+                      ? "bg-muted/30 cursor-not-allowed opacity-50"
                       : r
                       ? r.status === "approved"
                         ? "bg-destructive/70"
@@ -180,9 +187,10 @@ export function AvailabilityCalendar({
                         type="button"
                         disabled={disabled}
                         onClick={() => pickSlot(d, hour, minute)}
-                        title={`${label} — ${r ? (r.status === "approved" ? t("cal_booked") : t("cal_pending")) : t("cal_free")}`}
+                        title={`${label} — ${cutoff ? t("cal_cutoff_rule") : r ? (r.status === "approved" ? t("cal_booked") : t("cal_pending")) : t("cal_free")}`}
                         className={cn("m-[1px] h-7 rounded-sm border transition-colors", isHourStart ? "border-border/50" : "border-border/20", cls)}
                       />
+
                     );
                   })}
                 </Fragment>
