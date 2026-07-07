@@ -30,7 +30,7 @@ type Reservation = {
   attendees: number;
   start_at: string;
   end_at: string;
-  status: "pending" | "approved" | "rejected" | "cancelled";
+  status: "pending" | "pending_ta_advisor" | "pending_admin" | "approved" | "rejected" | "cancelled";
   admin_notes: string | null;
   created_at: string;
   rooms: { code: string; name_en: string; name_th: string } | null;
@@ -63,7 +63,8 @@ function AdminPage() {
         .from("reservations")
         .select("*, rooms(code, name_en, name_th)")
         .order("created_at", { ascending: false });
-      if (filter !== "all") q = q.eq("status", filter);
+      if (filter === "pending") q = q.in("status", ["pending", "pending_ta_advisor", "pending_admin"]);
+      else if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
       return data as Reservation[];
@@ -138,7 +139,7 @@ function AdminPage() {
                   </div>
                   <p className="mt-3 rounded-md bg-muted p-3 text-sm">{r.purpose}</p>
                 </div>
-                {r.status === "pending" && (
+                {(r.status === "pending" || r.status === "pending_ta_advisor" || r.status === "pending_admin") && (
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => updateStatus(r.id, "approved")}>
                       <Check className="mr-1 h-4 w-4" />{t("admin_approve")}
@@ -265,12 +266,15 @@ function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
 function StatusBadge({ status }: { status: Reservation["status"] }) {
   const map: Record<Reservation["status"], string> = {
     pending: "bg-gold/20 text-gold-foreground border-gold/40",
+    pending_ta_advisor: "bg-gold/20 text-gold-foreground border-gold/40",
+    pending_admin: "bg-gold/20 text-gold-foreground border-gold/40",
     approved: "bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400",
     rejected: "bg-destructive/15 text-destructive border-destructive/30",
     cancelled: "bg-muted text-muted-foreground border-border",
   };
   const label: Record<Reservation["status"], string> = {
-    pending: "Pending", approved: "Approved", rejected: "Rejected", cancelled: "Cancelled",
+    pending: "Pending", pending_ta_advisor: "Awaiting TA/Advisor", pending_admin: "Awaiting Admin",
+    approved: "Approved", rejected: "Rejected", cancelled: "Cancelled",
   };
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${map[status]}`}>{label[status]}</span>;
 }
