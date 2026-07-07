@@ -139,7 +139,7 @@ function AdminPage() {
                   </div>
                   <p className="mt-3 rounded-md bg-muted p-3 text-sm">{r.purpose}</p>
                 </div>
-                {r.status === "pending" && (
+                {(r.status === "pending" || r.status === "pending_ta_advisor" || r.status === "pending_admin") && (
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => updateStatus(r.id, "approved")}>
                       <Check className="mr-1 h-4 w-4" />{t("admin_approve")}
