@@ -15,7 +15,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 
-type Room = { id: string; code: string; name_en: string; name_th: string; type: "lab" | "pc"; capacity: number };
+type EquipmentItem = { name: string; model?: string };
+type Room = { id: string; code: string; name_en: string; name_th: string; type: "lab" | "pc"; capacity: number; equipment: EquipmentItem[] | null };
+type EquipSel = { checked: string[]; other: string };
 
 const searchSchema = z.object({ room: z.string().optional() });
 
@@ -39,7 +41,7 @@ const formSchema = z.object({
   requester_phone: z.string().trim().min(1).max(30),
   user_status: z.enum(USER_STATUSES),
   advisor_name: z.string().trim().min(1).max(200),
-  equipment: z.string().trim().min(1).max(500),
+  equipment: z.string().trim().max(2000).optional(),
   sample_count: z.string().trim().min(1).max(200),
   purpose: z.string().trim().min(3).max(1000),
   attendees: z.coerce.number().int().min(1).max(500),
@@ -58,9 +60,9 @@ function ReservePage() {
   const { data: rooms = [] } = useQuery({
     queryKey: ["rooms"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("rooms").select("id, code, name_en, name_th, type, capacity").eq("active", true).order("code");
+      const { data, error } = await supabase.from("rooms").select("id, code, name_en, name_th, type, capacity, equipment").eq("active", true).order("code");
       if (error) throw error;
-      return data as Room[];
+      return data as unknown as Room[];
     },
   });
 
@@ -71,7 +73,6 @@ function ReservePage() {
     requester_phone: "",
     user_status: "" as "" | (typeof USER_STATUSES)[number],
     advisor_name: "",
-    equipment: "",
     sample_count: "",
     purpose: "",
     attendees: "1",
@@ -80,8 +81,19 @@ function ReservePage() {
     confirmed_contact: false,
     confirmed_calendar: false,
   });
+  const [equipByRoom, setEquipByRoom] = useState<Record<string, EquipSel>>({});
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const getEquip = (roomId: string): EquipSel => equipByRoom[roomId] ?? { checked: [], other: "" };
+  const setEquip = (roomId: string, next: EquipSel) => setEquipByRoom((m) => ({ ...m, [roomId]: next }));
+
+  const buildEquipmentText = (roomId: string): string => {
+    const sel = getEquip(roomId);
+    const parts = [...sel.checked];
+    if (sel.other.trim()) parts.push(sel.other.trim());
+    return parts.join(", ");
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +108,18 @@ function ReservePage() {
       toast.error(lang === "th" ? "เวลาสิ้นสุดต้องหลังเวลาเริ่มต้น" : "End time must be after start time");
       return;
     }
+    // Per-room equipment validation
+    for (const rid of payload.room_ids) {
+      const text = buildEquipmentText(rid);
+      if (!text) {
+        const room = rooms.find((r) => r.id === rid);
+        toast.error(
+          (lang === "th" ? "กรุณาระบุอุปกรณ์สำหรับห้อง " : "Please specify equipment for room ") +
+            (room?.code ?? ""),
+        );
+        return;
+      }
+    }
     setSubmitting(true);
     const rows = payload.room_ids.map((room_id) => ({
       room_id,
@@ -108,7 +132,7 @@ function ReservePage() {
       start_at: new Date(payload.start_at).toISOString(),
       end_at: new Date(payload.end_at).toISOString(),
       user_status: payload.user_status,
-      equipment: payload.equipment,
+      equipment: buildEquipmentText(room_id),
       sample_count: payload.sample_count,
       confirmed_contact: payload.confirmed_contact,
       confirmed_calendar: payload.confirmed_calendar,
@@ -121,7 +145,8 @@ function ReservePage() {
     }
     toast.success(t("f_success"));
     setSuccess(true);
-    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", equipment: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
+    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
+    setEquipByRoom({});
   };
 
 
@@ -221,7 +246,67 @@ function ReservePage() {
           </div>
 
           <Field label={t("f_equipment")} required>
-            <Textarea value={form.equipment} onChange={(e) => set("equipment", e.target.value)} rows={2} maxLength={500} required />
+            {form.room_ids.length === 0 && (
+              <p className="text-xs text-muted-foreground">{lang === "th" ? "โปรดเลือกห้องก่อน" : "Please select a room first."}</p>
+            )}
+            <div className="space-y-3">
+              {form.room_ids.map((rid) => {
+                const room = rooms.find((r) => r.id === rid);
+                if (!room) return null;
+                const items = Array.isArray(room.equipment) ? room.equipment : [];
+                const sel = getEquip(rid);
+                return (
+                  <div key={rid} className="rounded-lg border border-border bg-background p-3">
+                    <p className="mb-2 text-sm font-medium">
+                      <span className="font-display text-xs font-semibold text-gold">{room.code}</span>{" "}
+                      <span className="text-foreground/80">{lang === "th" ? room.name_th : room.name_en}</span>
+                    </p>
+                    {items.length > 0 ? (
+                      <>
+                        <p className="mb-2 text-xs text-muted-foreground">{t("f_equipment_pick")}</p>
+                        <div className="grid gap-1.5 sm:grid-cols-2">
+                          {items.map((it) => {
+                            const label = it.model ? `${it.name} (${it.model})` : it.name;
+                            const checked = sel.checked.includes(label);
+                            return (
+                              <label key={label} className="flex items-center gap-2 text-sm cursor-pointer rounded px-1.5 py-1 hover:bg-muted/50">
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(v) => setEquip(rid, {
+                                    ...sel,
+                                    checked: v === true ? [...sel.checked, label] : sel.checked.filter((x) => x !== label),
+                                  })}
+                                />
+                                <span>{label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2">
+                          <Label className="text-xs text-muted-foreground">{t("f_equipment_other")}</Label>
+                          <Input
+                            value={sel.other}
+                            onChange={(e) => setEquip(rid, { ...sel, other: e.target.value })}
+                            maxLength={300}
+                            className="mt-1"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="mb-2 text-xs text-muted-foreground">{t("f_equipment_none")}</p>
+                        <Textarea
+                          value={sel.other}
+                          onChange={(e) => setEquip(rid, { ...sel, other: e.target.value })}
+                          rows={2}
+                          maxLength={500}
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
             <p className="text-xs text-muted-foreground">{t("f_equipment_hint")}</p>
           </Field>
 
