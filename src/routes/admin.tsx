@@ -63,7 +63,8 @@ function AdminPage() {
         .from("reservations")
         .select("*, rooms(code, name_en, name_th)")
         .order("created_at", { ascending: false });
-      if (filter !== "all") q = q.eq("status", filter);
+      if (filter === "pending") q = q.in("status", ["pending", "pending_ta_advisor", "pending_admin"]);
+      else if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
       return data as Reservation[];
