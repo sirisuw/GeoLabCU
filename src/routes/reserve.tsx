@@ -336,10 +336,10 @@ function ReservePage() {
 
           <div className="grid gap-4 md:grid-cols-3">
             <Field label={t("f_start")} required>
-              <Input type="datetime-local" value={form.start_at} onChange={(e) => set("start_at", e.target.value)} required />
+              <Input type="datetime-local" min={minStartLocal} value={form.start_at} onChange={(e) => set("start_at", e.target.value)} required />
             </Field>
             <Field label={t("f_end")} required>
-              <Input type="datetime-local" value={form.end_at} onChange={(e) => set("end_at", e.target.value)} required />
+              <Input type="datetime-local" min={minStartLocal} value={form.end_at} onChange={(e) => set("end_at", e.target.value)} required />
             </Field>
             <Field label={t("f_attendees")} required>
               <Input type="number" min={1} max={500} value={form.attendees} onChange={(e) => set("attendees", e.target.value)} required />
