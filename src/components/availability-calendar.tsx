@@ -95,6 +95,21 @@ export function AvailabilityCalendar({
     return null;
   };
 
+  const earliestAllowedDay = useMemo(() => {
+    const now = new Date();
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    if (now.getHours() >= 7) d.setDate(d.getDate() + 1);
+    return d;
+  }, []);
+
+  const isBeforeCutoff = (day: Date, hour: number, minute: number) => {
+    const slot = new Date(day);
+    slot.setHours(hour, minute, 0, 0);
+    if (day < earliestAllowedDay) return true;
+    return slot.getTime() < Date.now();
+  };
+
   const pickSlot = (day: Date, hour: number, minute: number) => {
     if (!onPickSlot) return;
     const s = new Date(day);
