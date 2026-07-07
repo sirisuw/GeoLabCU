@@ -60,9 +60,9 @@ function ReservePage() {
   const { data: rooms = [] } = useQuery({
     queryKey: ["rooms"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("rooms").select("id, code, name_en, name_th, type, capacity").eq("active", true).order("code");
+      const { data, error } = await supabase.from("rooms").select("id, code, name_en, name_th, type, capacity, equipment").eq("active", true).order("code");
       if (error) throw error;
-      return data as Room[];
+      return data as unknown as Room[];
     },
   });
 
