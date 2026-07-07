@@ -84,6 +84,13 @@ export const dict = {
   cal_pending: { th: "รออนุมัติ", en: "Pending" },
   cal_free: { th: "ว่าง", en: "Free" },
   cal_click_free: { th: "คลิกช่องว่างเพื่อเลือกเวลาเริ่มต้น", en: "Click a free slot to prefill start time." },
+  cal_cutoff_rule: {
+    th: "หากจองก่อน 7:00 น. สามารถใช้ห้องได้ในวันเดียวกัน หากจองหลัง 7:00 น. จองได้ตั้งแต่วันถัดไป",
+    en: "Book before 7:00 AM to use the lab the same day. After 7:00 AM, the earliest available day is tomorrow.",
+  },
+  f_equipment_pick: { th: "เลือกอุปกรณ์สำหรับห้องนี้", en: "Select equipment for this room" },
+  f_equipment_none: { th: "ห้องนี้ไม่มีรายการอุปกรณ์ — โปรดระบุอุปกรณ์ที่ต้องการ", en: "No preset equipment — please describe what you need." },
+  f_equipment_other: { th: "อื่นๆ (ระบุ)", en: "Other (specify)" },
 
   admin_title: { th: "แดชบอร์ดผู้ดูแล", en: "Admin dashboard" },
   admin_sub: { th: "จัดการคำขอจองห้อง", en: "Manage reservation requests." },
