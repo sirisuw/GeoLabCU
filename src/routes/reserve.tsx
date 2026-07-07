@@ -108,6 +108,18 @@ function ReservePage() {
       toast.error(lang === "th" ? "เวลาสิ้นสุดต้องหลังเวลาเริ่มต้น" : "End time must be after start time");
       return;
     }
+    // Per-room equipment validation
+    for (const rid of payload.room_ids) {
+      const text = buildEquipmentText(rid);
+      if (!text) {
+        const room = rooms.find((r) => r.id === rid);
+        toast.error(
+          (lang === "th" ? "กรุณาระบุอุปกรณ์สำหรับห้อง " : "Please specify equipment for room ") +
+            (room?.code ?? ""),
+        );
+        return;
+      }
+    }
     setSubmitting(true);
     const rows = payload.room_ids.map((room_id) => ({
       room_id,
@@ -120,7 +132,7 @@ function ReservePage() {
       start_at: new Date(payload.start_at).toISOString(),
       end_at: new Date(payload.end_at).toISOString(),
       user_status: payload.user_status,
-      equipment: payload.equipment,
+      equipment: buildEquipmentText(room_id),
       sample_count: payload.sample_count,
       confirmed_contact: payload.confirmed_contact,
       confirmed_calendar: payload.confirmed_calendar,
@@ -133,7 +145,8 @@ function ReservePage() {
     }
     toast.success(t("f_success"));
     setSuccess(true);
-    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", equipment: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
+    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
+    setEquipByRoom({});
   };
 
 
