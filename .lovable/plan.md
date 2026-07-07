@@ -1,32 +1,49 @@
-## What to change
+## Automated reservation emails via Resend
 
-### 1. Calendar — enforce the 7:00 AM booking rule
-On `src/components/availability-calendar.tsx`, disable and grey-out any slot that violates the rule:
-- If it is currently **before 7:00 AM**, allow same-day slots and any future date.
-- If it is currently **7:00 AM or later**, disable all of today's remaining slots — earliest bookable day = tomorrow.
-- All past slots stay disabled (they already are visually via booked, but past-time slots on today should also be blocked).
+### Flow
+1. **User submits reservation** → immediately:
+   - Confirmation email to the user ("We received your request, pending approval")
+   - Notification email to TAs/Professors assigned to that room (with an Approve/Reject link)
+2. **TA/Prof clicks Approve or Reject** (or admin uses the admin page) →
+   - Result email sent back to the user ("Your reservation was approved/rejected")
 
-Add a short helper `isBeforeCutoff(slotStart)` returning true when the slot's date is earlier than the earliest allowed booking date. Disabled cells use a distinct style (`bg-muted/30 cursor-not-allowed`, no hover, no click).
+### Recipients (per-room)
+Add a `room_staff` table linking rooms → staff emails/roles:
+```
+room_staff(id, room_id, email, name, role: 'ta' | 'professor', notify)
+```
+Managed from the `/rooms` admin view (add/edit/remove staff per room). When a reservation is created, we look up all staff for the booked room and email them.
 
-Add a small note above the grid restating the rule in TH/EN (pull from `i18n`), so users see why past days are locked.
+### Sender: Resend
+- Add `RESEND_API_KEY` secret (I'll prompt you).
+- Ask you for the "from" address (e.g. `noreply@geoculab.com`) and verify the sending domain in Resend (DNS records — I'll list them).
+- Until the domain is verified, we fall back to Resend's `onboarding@resend.dev` sender so email works immediately for testing.
 
-### 2. Equipment field — checklist per room, free text fallback
-On `src/routes/reserve.tsx`:
-- Extend the rooms query to also select `equipment` (JSON array of `{ name, model? }`).
-- Replace the single `equipment` textarea with a dynamic block that renders **per selected room**:
-  - If that room has a non-empty `equipment` array → render a checkbox list of its items. User ticks what they need.
-  - If the room has no equipment defined → render a small textarea for that room so the user can type what they need.
-- Store the result as `equipment_by_room: Record<roomId, { checked: string[]; note: string }>`.
-- On submit, flatten each room's selection into the existing `equipment` text column (e.g. `"Microscope, Sieve shaker"` or the typed note) so the DB schema and admin view do not change.
-- Update validation: require at least one checked item OR non-empty note per selected room.
+### Implementation
 
-i18n strings added: `f_equipment_pick` ("Select equipment for this room" / "เลือกอุปกรณ์สำหรับห้องนี้"), `f_equipment_none` ("No preset equipment — please describe what you need" / "ห้องนี้ไม่มีรายการอุปกรณ์ โปรดระบุอุปกรณ์ที่ต้องการ"), and the calendar rule notice.
+**DB migration**
+- `room_staff` table + RLS + GRANTs (admin-only write, staff-readable).
+- Optional `reservation_tokens` table for one-click approve/reject links (short-lived signed tokens), so TAs don't need to log in.
 
-### Files touched
-- `src/components/availability-calendar.tsx` — 7 AM cutoff logic + disabled styling + rule notice.
-- `src/routes/reserve.tsx` — per-room equipment UI, state, validation, submit flattening.
-- `src/lib/i18n.tsx` — new TH/EN strings.
+**Server functions / routes (TanStack Start)**
+- `src/lib/email.server.ts` — Resend client + `sendEmail({to, subject, html})` helper.
+- `src/lib/emails/*.tsx` — three templates: `reservation-received` (user), `reservation-pending-staff` (TA/Prof, with approve/reject buttons), `reservation-decision` (user).
+- `src/lib/reservations.functions.ts` —
+  - `createReservation` server fn: inserts rows, looks up room_staff, sends the two initial emails. Replaces the direct `supabase.from("reservations").insert()` call in `reserve.tsx`.
+  - `decideReservation` server fn: called by admin page; updates status and sends the decision email.
+- `src/routes/api/public/approve.$token.ts` — public GET endpoint used by the emailed approve/reject links; verifies token, updates status, sends decision email, shows a small confirmation page.
 
-### Out of scope
-- No DB schema changes; `reservations.equipment` stays a text column.
-- No admin page changes.
+**UI**
+- `reserve.tsx`: swap the insert for `createReservation`.
+- `admin.tsx`: swap `updateStatus` for `decideReservation` so it also emails the user.
+- `rooms.tsx` (admin section): add a "Staff for this room" editor.
+
+### What I need from you before building
+1. The **from address** (e.g. `noreply@yourdomain.com`) and confirmation you can add DNS records to that domain — or say "use Resend test sender for now".
+2. Your **Resend API key** (I'll request it as a secret when you approve).
+3. Whether TAs/Profs should be able to **approve via one-click email link** (no login), or must log in to the admin page.
+
+### Technical notes (internal)
+- Emails sent from inside `createServerFn` handlers via Resend REST API (`fetch`) — Worker-compatible, no Node SDK needed.
+- Token links use HMAC(reservation_id + role + action) with `EMAIL_LINK_SECRET`; single-use via a `used_at` column.
+- Emails are fire-and-forget with error logging; a failed email never blocks the reservation insert.
