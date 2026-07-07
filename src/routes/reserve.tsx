@@ -57,6 +57,17 @@ function ReservePage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow.
+  const earliestAllowed = (() => {
+    const now = new Date();
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    if (now.getHours() >= 7) d.setDate(d.getDate() + 1);
+    return d;
+  })();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const minStartLocal = `${earliestAllowed.getFullYear()}-${pad(earliestAllowed.getMonth() + 1)}-${pad(earliestAllowed.getDate())}T00:00`;
+
   const { data: rooms = [] } = useQuery({
     queryKey: ["rooms"],
     queryFn: async () => {
@@ -106,6 +117,14 @@ function ReservePage() {
     const payload = parsed.data;
     if (new Date(payload.end_at) <= new Date(payload.start_at)) {
       toast.error(lang === "th" ? "เวลาสิ้นสุดต้องหลังเวลาเริ่มต้น" : "End time must be after start time");
+      return;
+    }
+    if (new Date(payload.start_at) < earliestAllowed) {
+      toast.error(
+        lang === "th"
+          ? "หากจองหลัง 7:00 น. เริ่มใช้ห้องได้ตั้งแต่วันถัดไปเท่านั้น"
+          : "Bookings made after 7:00 AM can only start from the next day.",
+      );
       return;
     }
     // Per-room equipment validation
@@ -317,10 +336,10 @@ function ReservePage() {
 
           <div className="grid gap-4 md:grid-cols-3">
             <Field label={t("f_start")} required>
-              <Input type="datetime-local" value={form.start_at} onChange={(e) => set("start_at", e.target.value)} required />
+              <Input type="datetime-local" min={minStartLocal} value={form.start_at} onChange={(e) => set("start_at", e.target.value)} required />
             </Field>
             <Field label={t("f_end")} required>
-              <Input type="datetime-local" value={form.end_at} onChange={(e) => set("end_at", e.target.value)} required />
+              <Input type="datetime-local" min={minStartLocal} value={form.end_at} onChange={(e) => set("end_at", e.target.value)} required />
             </Field>
             <Field label={t("f_attendees")} required>
               <Input type="number" min={1} max={500} value={form.attendees} onChange={(e) => set("attendees", e.target.value)} required />
