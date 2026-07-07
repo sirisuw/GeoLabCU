@@ -246,7 +246,67 @@ function ReservePage() {
           </div>
 
           <Field label={t("f_equipment")} required>
-            <Textarea value={form.equipment} onChange={(e) => set("equipment", e.target.value)} rows={2} maxLength={500} required />
+            {form.room_ids.length === 0 && (
+              <p className="text-xs text-muted-foreground">{lang === "th" ? "โปรดเลือกห้องก่อน" : "Please select a room first."}</p>
+            )}
+            <div className="space-y-3">
+              {form.room_ids.map((rid) => {
+                const room = rooms.find((r) => r.id === rid);
+                if (!room) return null;
+                const items = Array.isArray(room.equipment) ? room.equipment : [];
+                const sel = getEquip(rid);
+                return (
+                  <div key={rid} className="rounded-lg border border-border bg-background p-3">
+                    <p className="mb-2 text-sm font-medium">
+                      <span className="font-display text-xs font-semibold text-gold">{room.code}</span>{" "}
+                      <span className="text-foreground/80">{lang === "th" ? room.name_th : room.name_en}</span>
+                    </p>
+                    {items.length > 0 ? (
+                      <>
+                        <p className="mb-2 text-xs text-muted-foreground">{t("f_equipment_pick")}</p>
+                        <div className="grid gap-1.5 sm:grid-cols-2">
+                          {items.map((it) => {
+                            const label = it.model ? `${it.name} (${it.model})` : it.name;
+                            const checked = sel.checked.includes(label);
+                            return (
+                              <label key={label} className="flex items-center gap-2 text-sm cursor-pointer rounded px-1.5 py-1 hover:bg-muted/50">
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(v) => setEquip(rid, {
+                                    ...sel,
+                                    checked: v === true ? [...sel.checked, label] : sel.checked.filter((x) => x !== label),
+                                  })}
+                                />
+                                <span>{label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2">
+                          <Label className="text-xs text-muted-foreground">{t("f_equipment_other")}</Label>
+                          <Input
+                            value={sel.other}
+                            onChange={(e) => setEquip(rid, { ...sel, other: e.target.value })}
+                            maxLength={300}
+                            className="mt-1"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="mb-2 text-xs text-muted-foreground">{t("f_equipment_none")}</p>
+                        <Textarea
+                          value={sel.other}
+                          onChange={(e) => setEquip(rid, { ...sel, other: e.target.value })}
+                          rows={2}
+                          maxLength={500}
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
             <p className="text-xs text-muted-foreground">{t("f_equipment_hint")}</p>
           </Field>
 
