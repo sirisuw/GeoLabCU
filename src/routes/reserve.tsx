@@ -41,7 +41,7 @@ const formSchema = z.object({
   requester_phone: z.string().trim().min(1).max(30),
   user_status: z.enum(USER_STATUSES),
   advisor_name: z.string().trim().min(1).max(200),
-  equipment: z.string().trim().min(1).max(500),
+  equipment: z.string().trim().max(2000).optional(),
   sample_count: z.string().trim().min(1).max(200),
   purpose: z.string().trim().min(3).max(1000),
   attendees: z.coerce.number().int().min(1).max(500),
