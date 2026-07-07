@@ -73,7 +73,6 @@ function ReservePage() {
     requester_phone: "",
     user_status: "" as "" | (typeof USER_STATUSES)[number],
     advisor_name: "",
-    equipment: "",
     sample_count: "",
     purpose: "",
     attendees: "1",
@@ -82,8 +81,19 @@ function ReservePage() {
     confirmed_contact: false,
     confirmed_calendar: false,
   });
+  const [equipByRoom, setEquipByRoom] = useState<Record<string, EquipSel>>({});
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const getEquip = (roomId: string): EquipSel => equipByRoom[roomId] ?? { checked: [], other: "" };
+  const setEquip = (roomId: string, next: EquipSel) => setEquipByRoom((m) => ({ ...m, [roomId]: next }));
+
+  const buildEquipmentText = (roomId: string): string => {
+    const sel = getEquip(roomId);
+    const parts = [...sel.checked];
+    if (sel.other.trim()) parts.push(sel.other.trim());
+    return parts.join(", ");
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
