@@ -57,6 +57,17 @@ function ReservePage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow.
+  const earliestAllowed = (() => {
+    const now = new Date();
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    if (now.getHours() >= 7) d.setDate(d.getDate() + 1);
+    return d;
+  })();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const minStartLocal = `${earliestAllowed.getFullYear()}-${pad(earliestAllowed.getMonth() + 1)}-${pad(earliestAllowed.getDate())}T00:00`;
+
   const { data: rooms = [] } = useQuery({
     queryKey: ["rooms"],
     queryFn: async () => {
