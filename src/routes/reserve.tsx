@@ -15,7 +15,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 
-type Room = { id: string; code: string; name_en: string; name_th: string; type: "lab" | "pc"; capacity: number };
+type EquipmentItem = { name: string; model?: string };
+type Room = { id: string; code: string; name_en: string; name_th: string; type: "lab" | "pc"; capacity: number; equipment: EquipmentItem[] | null };
+type EquipSel = { checked: string[]; other: string };
 
 const searchSchema = z.object({ room: z.string().optional() });
 
