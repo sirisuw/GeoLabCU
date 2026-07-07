@@ -394,7 +394,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
-      reservation_status: "pending" | "approved" | "rejected" | "cancelled"
+      reservation_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+        | "pending_ta_advisor"
+        | "pending_admin"
       room_type: "lab" | "pc"
       user_status: "bachelor" | "master" | "phd" | "staff"
     }
@@ -525,7 +531,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
-      reservation_status: ["pending", "approved", "rejected", "cancelled"],
+      reservation_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled",
+        "pending_ta_advisor",
+        "pending_admin",
+      ],
       room_type: ["lab", "pc"],
       user_status: ["bachelor", "master", "phd", "staff"],
     },
