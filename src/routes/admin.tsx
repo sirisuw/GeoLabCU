@@ -30,7 +30,7 @@ type Reservation = {
   attendees: number;
   start_at: string;
   end_at: string;
-  status: "pending" | "approved" | "rejected" | "cancelled";
+  status: "pending" | "pending_ta_advisor" | "pending_admin" | "approved" | "rejected" | "cancelled";
   admin_notes: string | null;
   created_at: string;
   rooms: { code: string; name_en: string; name_th: string } | null;
