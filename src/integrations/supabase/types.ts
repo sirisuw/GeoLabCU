@@ -186,6 +186,47 @@ export type Database = {
           },
         ]
       }
+      room_staff: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notify: boolean
+          role: string
+          room_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notify?: boolean
+          role?: string
+          room_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notify?: boolean
+          role?: string
+          room_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_staff_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           active: boolean
