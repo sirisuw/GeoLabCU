@@ -81,8 +81,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Geo Labs — Chula Geology Room Reservations" },
       { name: "twitter:description", content: "Book laboratory and computer rooms at the Department of Geology, Chulalongkorn University." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d5cf3880-930e-4e80-a66a-d17b2723df77/id-preview-1f8cc06a--a8a8882b-a971-478e-9fa2-73a67402965e.lovable.app-1783337560256.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d5cf3880-930e-4e80-a66a-d17b2723df77/id-preview-1f8cc06a--a8a8882b-a971-478e-9fa2-73a67402965e.lovable.app-1783337560256.png" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9f2eda49-a213-4de8-8e1a-49342aea8e08/id-preview-839e170d--a8a8882b-a971-478e-9fa2-73a67402965e.lovable.app-1783527128106.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9f2eda49-a213-4de8-8e1a-49342aea8e08/id-preview-839e170d--a8a8882b-a971-478e-9fa2-73a67402965e.lovable.app-1783527128106.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
