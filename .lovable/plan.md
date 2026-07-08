@@ -1,49 +1,45 @@
-## Automated reservation emails via Resend
+## What the file contains
 
-### Flow
-1. **User submits reservation** → immediately:
-   - Confirmation email to the user ("We received your request, pending approval")
-   - Notification email to TAs/Professors assigned to that room (with an Approve/Reject link)
-2. **TA/Prof clicks Approve or Reject** (or admin uses the admin page) →
-   - Result email sent back to the user ("Your reservation was approved/rejected")
+A master list of every lab/computer room in your department with three pieces of info per room:
 
-### Recipients (per-room)
-Add a `room_staff` table linking rooms → staff emails/roles:
-```
-room_staff(id, room_id, email, name, role: 'ta' | 'professor', notify)
-```
-Managed from the `/rooms` admin view (add/edit/remove staff per room). When a reservation is created, we look up all staff for the booked room and email them.
+1. **Room number + name** (e.g. `121 — ห้องปฏิบัติการ EPMA`, `130 — ห้องปฏิบัติการ Crushing`, …)
+2. **Instruments that must be reserved individually** (e.g. Crushing has `เครื่องบด 1..5`; Cutting/Grinding has 12 machines; XRD/XRF has `XRD` and `XRF`; 325A has `Computer 1..15`)
+3. **Approving officer per room** — the person who approves reservations:
+   - **คุณโศภิต** — 121, 225 (Microwave), 226C (shared), 228, 232, 234, 235, 237
+   - **คุณกัญชลิกา** — 131, 223A, 224, 225 (Fused bead), 226C (shared), 241, 242
+   - **คุณวิยดา** — 130
+   - Rooms 225 (hood), 325, 326, 325A, 424 have no approver listed
+4. A few **notes/questions** from the author (e.g. "check how many crushers actually work", "add XRF handheld?", "label benches 1–4 in room 241").
 
-### Sender: Resend
-- Add `RESEND_API_KEY` secret (I'll prompt you).
-- Ask you for the "from" address (e.g. `noreply@geoculab.com`) and verify the sending domain in Resend (DNS records — I'll list them).
-- Until the domain is verified, we fall back to Resend's `onboarding@resend.dev` sender so email works immediately for testing.
+## What I'll do
 
-### Implementation
+### 1. Update the rooms table with this real data
+- Insert/upsert every room from the sheet (code, Thai name, English name where obvious, type = `lab` or `pc`).
+- Fill each room's `equipment` list with the exact per-instrument options from column 3, so the reservation form shows the correct checkboxes per room (Crusher 1..5, Cutting machines 1..4, XRD/XRF, Computer 1..15, etc.).
+- Rooms with no listed instruments (223A, 232, 234, 235 outer, 325, 326, 424) get an empty equipment list — the form already falls back to a free-text field.
 
-**DB migration**
-- `room_staff` table + RLS + GRANTs (admin-only write, staff-readable).
-- Optional `reservation_tokens` table for one-click approve/reject links (short-lived signed tokens), so TAs don't need to log in.
+### 2. Wire the approvers into the email flow
+This is the exact "TA/Prof recipients per room" piece from the plan we already agreed on. I'll:
+- Add a `room_staff` table (room_id, name, email, role).
+- Seed it with the three officers mapped to their rooms as above.
+- Leave rooms without an approver empty for now (you'll tell me who to add later).
+- I still need the **email addresses** for คุณโศภิต, คุณกัญชลิกา, and คุณวิยดา — the sheet only has names.
 
-**Server functions / routes (TanStack Start)**
-- `src/lib/email.server.ts` — Resend client + `sendEmail({to, subject, html})` helper.
-- `src/lib/emails/*.tsx` — three templates: `reservation-received` (user), `reservation-pending-staff` (TA/Prof, with approve/reject buttons), `reservation-decision` (user).
-- `src/lib/reservations.functions.ts` —
-  - `createReservation` server fn: inserts rows, looks up room_staff, sends the two initial emails. Replaces the direct `supabase.from("reservations").insert()` call in `reserve.tsx`.
-  - `decideReservation` server fn: called by admin page; updates status and sends the decision email.
-- `src/routes/api/public/approve.$token.ts` — public GET endpoint used by the emailed approve/reject links; verifies token, updates status, sends decision email, shows a small confirmation page.
+### 3. Small UI follow-ups from the sheet's notes (optional, ask before doing)
+- Room 130: confirm actual working crusher count + max concurrent users.
+- Room 131: confirm working count of cutters / grinders / jaw crushers.
+- Room 241: bench labels 1–4, max 4 concurrent reservers.
+- Room 242: add "XRF handheld" as an option?
 
-**UI**
-- `reserve.tsx`: swap the insert for `createReservation`.
-- `admin.tsx`: swap `updateStatus` for `decideReservation` so it also emails the user.
-- `rooms.tsx` (admin section): add a "Staff for this room" editor.
+I'll skip these unless you confirm — the sheet marks them as open questions, not decisions.
 
-### What I need from you before building
-1. The **from address** (e.g. `noreply@yourdomain.com`) and confirmation you can add DNS records to that domain — or say "use Resend test sender for now".
-2. Your **Resend API key** (I'll request it as a secret when you approve).
-3. Whether TAs/Profs should be able to **approve via one-click email link** (no login), or must log in to the admin page.
+## What I need from you before building
+1. **Emails** for คุณโศภิต, คุณกัญชลิกา, คุณวิยดา (and anyone for the currently-blank rooms: 225 hood, 325, 326, 325A, 424).
+2. Confirm English names for the rooms are okay to auto-translate (e.g. "EPMA Laboratory", "Crushing Laboratory", "Computer Classroom"), or you'll provide them.
+3. Should I also action the four spreadsheet notes above, or park them?
 
-### Technical notes (internal)
-- Emails sent from inside `createServerFn` handlers via Resend REST API (`fetch`) — Worker-compatible, no Node SDK needed.
-- Token links use HMAC(reservation_id + role + action) with `EMAIL_LINK_SECRET`; single-use via a `used_at` column.
-- Emails are fire-and-forget with error logging; a failed email never blocks the reservation insert.
+## Technical notes (internal)
+
+- One migration: upsert `rooms` by `code`, replace `equipment` JSON per row; create `room_staff` (id, room_id fk, name, email, role default 'officer', notify bool) + RLS + GRANTs (admin write, staff readable) + seed rows.
+- Equipment JSON shape stays `{ name, model? }[]` to match `reserve.tsx` — I'll only fill `name`.
+- The already-planned `createReservation` server fn will look up `room_staff` for the booked room to build the notify list, so no extra code beyond the earlier email plan.
