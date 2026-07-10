@@ -260,6 +260,59 @@ function PendingEmailsPanel() {
   );
 }
 
+function RoleAssigner() {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"ta" | "lab_officer" | "admin">("ta");
+  const [group, setGroup] = useState<"sopit" | "kanchalika" | "wiyada" | "none">("sopit");
+  const [busy, setBusy] = useState(false);
+
+  const assign = async () => {
+    if (!email.trim()) return toast.error("Enter user email");
+    setBusy(true);
+    // Look up user id from auth via a lightweight profiles/user_roles path is not exposed to clients.
+    // As a stopgap, ask the user to provide the user id (uuid) in the email field if not signed up yet.
+    const looksLikeUuid = /^[0-9a-f-]{36}$/i.test(email.trim());
+    let userId = email.trim();
+    if (!looksLikeUuid) {
+      setBusy(false);
+      return toast.error("Paste the user's UUID (from auth) — email lookup requires backend fn (coming next)");
+    }
+    const payload: { user_id: string; role: typeof role; officer_group: typeof group | null } = {
+      user_id: userId,
+      role,
+      officer_group: role === "admin" ? null : group,
+    };
+    const { error } = await supabase.from("user_roles").insert(payload as never);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Assigned ${role}${role !== "admin" ? ` / ${group}` : ""}`);
+    setEmail("");
+  };
+
+  return (
+    <section className="mt-6 rounded-xl border border-border bg-card p-5">
+      <h2 className="mb-3 text-lg font-semibold">Assign staff role</h2>
+      <p className="mb-3 text-xs text-muted-foreground">Paste a user's UUID (from their signed-in session) and pick a role + officer group.</p>
+      <div className="grid gap-2 md:grid-cols-4">
+        <input className="rounded border border-border bg-background px-3 py-2 text-sm" placeholder="user UUID" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <select className="rounded border border-border bg-background px-3 py-2 text-sm" value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
+          <option value="ta">TA</option>
+          <option value="lab_officer">Lab officer</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select className="rounded border border-border bg-background px-3 py-2 text-sm" value={group} onChange={(e) => setGroup(e.target.value as typeof group)} disabled={role === "admin"}>
+          <option value="sopit">Sopit (121, 225A, 226C, 228, 232, 234, 235, 235H, 237)</option>
+          <option value="kanchalika">Kanchalika (131, 223A, 224, 241, 242)</option>
+          <option value="wiyada">Wiyada (130)</option>
+          <option value="none">— none —</option>
+        </select>
+        <Button onClick={assign} disabled={busy}>Assign</Button>
+      </div>
+    </section>
+  );
+}
+
+
 
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return <div className="flex items-center gap-1.5 text-muted-foreground"><span className="text-gold">{icon}</span>{text}</div>;
