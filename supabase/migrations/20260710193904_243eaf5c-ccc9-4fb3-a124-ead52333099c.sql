@@ -1,0 +1,1 @@
+UPDATE public.rooms SET capacity = 15 WHERE code = '325A';
