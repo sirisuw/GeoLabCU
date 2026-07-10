@@ -63,7 +63,8 @@ function AdminPage() {
         .from("reservations")
         .select("*, rooms(code, name_en, name_th)")
         .order("created_at", { ascending: false });
-      if (filter === "pending") q = q.in("status", ["pending", "pending_ta_advisor", "pending_admin"]);
+      if (filter === "pending") q = q.in("status", ["pending", "ta_approved", "pending_ta_advisor", "pending_admin"]);
+      else if (filter === "approved") q = q.in("status", ["approved", "confirmed"]);
       else if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
@@ -71,7 +72,7 @@ function AdminPage() {
     },
   });
 
-  const updateStatus = async (id: string, status: "approved" | "rejected") => {
+  const updateStatus = async (id: string, status: "confirmed" | "rejected") => {
     const { error } = await supabase.from("reservations").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(lang === "th" ? "อัปเดตแล้ว" : "Updated");
