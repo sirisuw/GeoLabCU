@@ -269,13 +269,20 @@ function StatusBadge({ status }: { status: Reservation["status"] }) {
     pending: "bg-gold/20 text-gold-foreground border-gold/40",
     pending_ta_advisor: "bg-gold/20 text-gold-foreground border-gold/40",
     pending_admin: "bg-gold/20 text-gold-foreground border-gold/40",
+    ta_approved: "bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400",
     approved: "bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400",
+    confirmed: "bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400",
     rejected: "bg-destructive/15 text-destructive border-destructive/30",
     cancelled: "bg-muted text-muted-foreground border-border",
+    expired: "bg-muted text-muted-foreground border-border",
+    completed: "bg-muted text-muted-foreground border-border",
+    no_show: "bg-destructive/15 text-destructive border-destructive/30",
   };
   const label: Record<Reservation["status"], string> = {
     pending: "Pending", pending_ta_advisor: "Awaiting TA/Advisor", pending_admin: "Awaiting Admin",
-    approved: "Approved", rejected: "Rejected", cancelled: "Cancelled",
+    ta_approved: "TA Approved", approved: "Approved", confirmed: "Confirmed",
+    rejected: "Rejected", cancelled: "Cancelled",
+    expired: "Expired", completed: "Completed", no_show: "No-show",
   };
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${map[status]}`}>{label[status]}</span>;
 }
