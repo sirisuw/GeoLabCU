@@ -140,22 +140,31 @@ function ReservePage() {
       }
     }
     setSubmitting(true);
-    const rows = payload.room_ids.map((room_id) => ({
-      room_id,
-      requester_name: payload.requester_name,
-      requester_email: payload.requester_email,
-      requester_phone: payload.requester_phone,
-      advisor_name: payload.advisor_name,
-      purpose: payload.purpose,
-      attendees: payload.attendees,
-      start_at: new Date(payload.start_at).toISOString(),
-      end_at: new Date(payload.end_at).toISOString(),
-      user_status: payload.user_status,
-      equipment: buildEquipmentText(room_id),
-      sample_count: payload.sample_count,
-      confirmed_contact: payload.confirmed_contact,
-      confirmed_calendar: payload.confirmed_calendar,
-    }));
+    const rows = payload.room_ids.map((room_id) => {
+      const sel = getEquip(room_id);
+      const equipment_selected = [
+        ...sel.checked.map((name) => ({ name })),
+        ...(sel.other.trim() ? [{ name: sel.other.trim() }] : []),
+      ];
+      return {
+        room_id,
+        requester_name: payload.requester_name,
+        requester_email: payload.requester_email,
+        requester_phone: payload.requester_phone,
+        advisor_name: payload.advisor_name,
+        purpose: payload.purpose,
+        attendees: payload.attendees,
+        start_at: new Date(payload.start_at).toISOString(),
+        end_at: new Date(payload.end_at).toISOString(),
+        user_status: payload.user_status,
+        equipment: buildEquipmentText(room_id),
+        equipment_selected,
+        sample_count: payload.sample_count,
+        student_id: null,
+        confirmed_contact: payload.confirmed_contact,
+        confirmed_calendar: payload.confirmed_calendar,
+      };
+    });
     const { error } = await supabase.from("reservations").insert(rows as never);
     setSubmitting(false);
     if (error) {
