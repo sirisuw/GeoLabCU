@@ -434,7 +434,9 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "ta" | "lab_officer"
+      flow_type: "equipment" | "computer" | "classroom"
+      officer_group: "sopit" | "kanchalika" | "wiyada" | "none"
       reservation_status:
         | "pending"
         | "approved"
@@ -442,6 +444,11 @@ export type Database = {
         | "cancelled"
         | "pending_ta_advisor"
         | "pending_admin"
+        | "ta_approved"
+        | "confirmed"
+        | "expired"
+        | "completed"
+        | "no_show"
       room_type: "lab" | "pc"
       user_status: "bachelor" | "master" | "phd" | "staff"
     }
@@ -571,7 +578,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "ta", "lab_officer"],
+      flow_type: ["equipment", "computer", "classroom"],
+      officer_group: ["sopit", "kanchalika", "wiyada", "none"],
       reservation_status: [
         "pending",
         "approved",
@@ -579,6 +588,11 @@ export const Constants = {
         "cancelled",
         "pending_ta_advisor",
         "pending_admin",
+        "ta_approved",
+        "confirmed",
+        "expired",
+        "completed",
+        "no_show",
       ],
       room_type: ["lab", "pc"],
       user_status: ["bachelor", "master", "phd", "staff"],
