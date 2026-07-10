@@ -30,7 +30,7 @@ type Reservation = {
   attendees: number;
   start_at: string;
   end_at: string;
-  status: "pending" | "pending_ta_advisor" | "pending_admin" | "approved" | "rejected" | "cancelled";
+  status: "pending" | "pending_ta_advisor" | "pending_admin" | "ta_approved" | "approved" | "confirmed" | "rejected" | "cancelled" | "expired" | "completed" | "no_show";
   admin_notes: string | null;
   created_at: string;
   rooms: { code: string; name_en: string; name_th: string } | null;
@@ -63,7 +63,8 @@ function AdminPage() {
         .from("reservations")
         .select("*, rooms(code, name_en, name_th)")
         .order("created_at", { ascending: false });
-      if (filter === "pending") q = q.in("status", ["pending", "pending_ta_advisor", "pending_admin"]);
+      if (filter === "pending") q = q.in("status", ["pending", "ta_approved", "pending_ta_advisor", "pending_admin"]);
+      else if (filter === "approved") q = q.in("status", ["approved", "confirmed"]);
       else if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
@@ -71,7 +72,7 @@ function AdminPage() {
     },
   });
 
-  const updateStatus = async (id: string, status: "approved" | "rejected") => {
+  const updateStatus = async (id: string, status: "confirmed" | "rejected") => {
     const { error } = await supabase.from("reservations").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(lang === "th" ? "อัปเดตแล้ว" : "Updated");
@@ -139,9 +140,9 @@ function AdminPage() {
                   </div>
                   <p className="mt-3 rounded-md bg-muted p-3 text-sm">{r.purpose}</p>
                 </div>
-                {(r.status === "pending" || r.status === "pending_ta_advisor" || r.status === "pending_admin") && (
+                {(r.status === "pending" || r.status === "ta_approved" || r.status === "pending_ta_advisor" || r.status === "pending_admin") && (
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => updateStatus(r.id, "approved")}>
+                    <Button size="sm" onClick={() => updateStatus(r.id, "confirmed")}>
                       <Check className="mr-1 h-4 w-4" />{t("admin_approve")}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "rejected")}>
@@ -155,6 +156,7 @@ function AdminPage() {
         </div>
       )}
 
+      <RoleAssigner />
       <PendingEmailsPanel />
     </div>
   );
@@ -258,6 +260,59 @@ function PendingEmailsPanel() {
   );
 }
 
+function RoleAssigner() {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"ta" | "lab_officer" | "admin">("ta");
+  const [group, setGroup] = useState<"sopit" | "kanchalika" | "wiyada" | "none">("sopit");
+  const [busy, setBusy] = useState(false);
+
+  const assign = async () => {
+    if (!email.trim()) return toast.error("Enter user email");
+    setBusy(true);
+    // Look up user id from auth via a lightweight profiles/user_roles path is not exposed to clients.
+    // As a stopgap, ask the user to provide the user id (uuid) in the email field if not signed up yet.
+    const looksLikeUuid = /^[0-9a-f-]{36}$/i.test(email.trim());
+    let userId = email.trim();
+    if (!looksLikeUuid) {
+      setBusy(false);
+      return toast.error("Paste the user's UUID (from auth) — email lookup requires backend fn (coming next)");
+    }
+    const payload: { user_id: string; role: typeof role; officer_group: typeof group | null } = {
+      user_id: userId,
+      role,
+      officer_group: role === "admin" ? null : group,
+    };
+    const { error } = await supabase.from("user_roles").insert(payload as never);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Assigned ${role}${role !== "admin" ? ` / ${group}` : ""}`);
+    setEmail("");
+  };
+
+  return (
+    <section className="mt-6 rounded-xl border border-border bg-card p-5">
+      <h2 className="mb-3 text-lg font-semibold">Assign staff role</h2>
+      <p className="mb-3 text-xs text-muted-foreground">Paste a user's UUID (from their signed-in session) and pick a role + officer group.</p>
+      <div className="grid gap-2 md:grid-cols-4">
+        <input className="rounded border border-border bg-background px-3 py-2 text-sm" placeholder="user UUID" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <select className="rounded border border-border bg-background px-3 py-2 text-sm" value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
+          <option value="ta">TA</option>
+          <option value="lab_officer">Lab officer</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select className="rounded border border-border bg-background px-3 py-2 text-sm" value={group} onChange={(e) => setGroup(e.target.value as typeof group)} disabled={role === "admin"}>
+          <option value="sopit">Sopit (121, 225A, 226C, 228, 232, 234, 235, 235H, 237)</option>
+          <option value="kanchalika">Kanchalika (131, 223A, 224, 241, 242)</option>
+          <option value="wiyada">Wiyada (130)</option>
+          <option value="none">— none —</option>
+        </select>
+        <Button onClick={assign} disabled={busy}>Assign</Button>
+      </div>
+    </section>
+  );
+}
+
+
 
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return <div className="flex items-center gap-1.5 text-muted-foreground"><span className="text-gold">{icon}</span>{text}</div>;
@@ -268,13 +323,20 @@ function StatusBadge({ status }: { status: Reservation["status"] }) {
     pending: "bg-gold/20 text-gold-foreground border-gold/40",
     pending_ta_advisor: "bg-gold/20 text-gold-foreground border-gold/40",
     pending_admin: "bg-gold/20 text-gold-foreground border-gold/40",
+    ta_approved: "bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400",
     approved: "bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400",
+    confirmed: "bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400",
     rejected: "bg-destructive/15 text-destructive border-destructive/30",
     cancelled: "bg-muted text-muted-foreground border-border",
+    expired: "bg-muted text-muted-foreground border-border",
+    completed: "bg-muted text-muted-foreground border-border",
+    no_show: "bg-destructive/15 text-destructive border-destructive/30",
   };
   const label: Record<Reservation["status"], string> = {
     pending: "Pending", pending_ta_advisor: "Awaiting TA/Advisor", pending_admin: "Awaiting Admin",
-    approved: "Approved", rejected: "Rejected", cancelled: "Cancelled",
+    ta_approved: "TA Approved", approved: "Approved", confirmed: "Confirmed",
+    rejected: "Rejected", cancelled: "Cancelled",
+    expired: "Expired", completed: "Completed", no_show: "No-show",
   };
   return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${map[status]}`}>{label[status]}</span>;
 }
