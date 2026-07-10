@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      equipment_maintenance: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ended_at: string | null
+          equipment_name: string
+          id: string
+          reason: string | null
+          room_id: string
+          started_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          equipment_name: string
+          id?: string
+          reason?: string | null
+          room_id: string
+          started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          equipment_name?: string
+          id?: string
+          reason?: string | null
+          room_id?: string
+          started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_maintenance_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      no_show_counters: {
+        Row: {
+          count: number
+          last_no_show_at: string | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          count?: number
+          last_no_show_at?: string | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          last_no_show_at?: string | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pending_emails: {
         Row: {
           body_html: string
@@ -81,6 +146,7 @@ export type Database = {
       }
       reservations: {
         Row: {
+          admin_note: string | null
           admin_notes: string | null
           admin_notified_at: string | null
           advisor_decided_at: string | null
@@ -89,13 +155,20 @@ export type Database = {
           advisor_status: string
           advisor_token: string
           attendees: number
+          completed_at: string | null
           confirmed_calendar: boolean
           confirmed_contact: boolean
           created_at: string
           department: string | null
           end_at: string
           equipment: string | null
+          equipment_selected: Json
+          expires_at: string | null
+          flow_type: Database["public"]["Enums"]["flow_type"] | null
           id: string
+          no_show: boolean
+          professor_endorsement: string
+          professor_note: string | null
           purpose: string
           requester_email: string
           requester_name: string
@@ -107,12 +180,14 @@ export type Database = {
           student_id: string | null
           ta_decided_at: string | null
           ta_email: string | null
+          ta_note: string | null
           ta_status: string
           ta_token: string
           updated_at: string
           user_status: Database["public"]["Enums"]["user_status"] | null
         }
         Insert: {
+          admin_note?: string | null
           admin_notes?: string | null
           admin_notified_at?: string | null
           advisor_decided_at?: string | null
@@ -121,13 +196,20 @@ export type Database = {
           advisor_status?: string
           advisor_token?: string
           attendees?: number
+          completed_at?: string | null
           confirmed_calendar?: boolean
           confirmed_contact?: boolean
           created_at?: string
           department?: string | null
           end_at: string
           equipment?: string | null
+          equipment_selected?: Json
+          expires_at?: string | null
+          flow_type?: Database["public"]["Enums"]["flow_type"] | null
           id?: string
+          no_show?: boolean
+          professor_endorsement?: string
+          professor_note?: string | null
           purpose: string
           requester_email: string
           requester_name: string
@@ -139,12 +221,14 @@ export type Database = {
           student_id?: string | null
           ta_decided_at?: string | null
           ta_email?: string | null
+          ta_note?: string | null
           ta_status?: string
           ta_token?: string
           updated_at?: string
           user_status?: Database["public"]["Enums"]["user_status"] | null
         }
         Update: {
+          admin_note?: string | null
           admin_notes?: string | null
           admin_notified_at?: string | null
           advisor_decided_at?: string | null
@@ -153,13 +237,20 @@ export type Database = {
           advisor_status?: string
           advisor_token?: string
           attendees?: number
+          completed_at?: string | null
           confirmed_calendar?: boolean
           confirmed_contact?: boolean
           created_at?: string
           department?: string | null
           end_at?: string
           equipment?: string | null
+          equipment_selected?: Json
+          expires_at?: string | null
+          flow_type?: Database["public"]["Enums"]["flow_type"] | null
           id?: string
+          no_show?: boolean
+          professor_endorsement?: string
+          professor_note?: string | null
           purpose?: string
           requester_email?: string
           requester_name?: string
@@ -171,6 +262,7 @@ export type Database = {
           student_id?: string | null
           ta_decided_at?: string | null
           ta_email?: string | null
+          ta_note?: string | null
           ta_status?: string
           ta_token?: string
           updated_at?: string
@@ -237,12 +329,14 @@ export type Database = {
           description_en: string | null
           description_th: string | null
           equipment: Json
+          flow_type: Database["public"]["Enums"]["flow_type"]
           google_calendar_url: string | null
           head_of_lab: string | null
           id: string
           location: string | null
           name_en: string
           name_th: string
+          officer_group: Database["public"]["Enums"]["officer_group"]
           staff_in_charge: string | null
           type: Database["public"]["Enums"]["room_type"]
         }
@@ -255,12 +349,14 @@ export type Database = {
           description_en?: string | null
           description_th?: string | null
           equipment?: Json
+          flow_type?: Database["public"]["Enums"]["flow_type"]
           google_calendar_url?: string | null
           head_of_lab?: string | null
           id?: string
           location?: string | null
           name_en: string
           name_th: string
+          officer_group?: Database["public"]["Enums"]["officer_group"]
           staff_in_charge?: string | null
           type: Database["public"]["Enums"]["room_type"]
         }
@@ -273,12 +369,14 @@ export type Database = {
           description_en?: string | null
           description_th?: string | null
           equipment?: Json
+          flow_type?: Database["public"]["Enums"]["flow_type"]
           google_calendar_url?: string | null
           head_of_lab?: string | null
           id?: string
           location?: string | null
           name_en?: string
           name_th?: string
+          officer_group?: Database["public"]["Enums"]["officer_group"]
           staff_in_charge?: string | null
           type?: Database["public"]["Enums"]["room_type"]
         }
@@ -288,18 +386,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          officer_group: Database["public"]["Enums"]["officer_group"] | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          officer_group?: Database["public"]["Enums"]["officer_group"] | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          officer_group?: Database["public"]["Enums"]["officer_group"] | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -405,6 +506,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_manage_room: {
+        Args: { _room_id: string; _user_id: string }
+        Returns: boolean
+      }
       decide_reservation_by_token: {
         Args: { _decision: string; _role: string; _token: string }
         Returns: boolean
@@ -432,6 +537,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      run_reservation_maintenance: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user" | "ta" | "lab_officer"
