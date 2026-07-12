@@ -80,6 +80,7 @@ function AdminPage() {
     if (error) return toast.error(error.message);
     toast.success(lang === "th" ? "อัปเดตแล้ว" : "Updated");
     qc.invalidateQueries({ queryKey: ["reservations"] });
+    processPendingEmails().catch(() => {});
   };
 
   const signOut = async () => {
