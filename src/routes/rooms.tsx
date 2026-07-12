@@ -132,7 +132,7 @@ function RoomsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => {
-            const equipment = Array.isArray(r.equipment) ? r.equipment : [];
+            const equipment = collapseNumberedEquipment(Array.isArray(r.equipment) ? r.equipment : []);
             return (
               <article key={r.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:border-gold hover:shadow-md">
                 <div className="flex flex-1 flex-col p-5">
