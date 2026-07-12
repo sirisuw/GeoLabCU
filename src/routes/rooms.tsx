@@ -18,6 +18,54 @@ export const Route = createFileRoute("/rooms")({
 
 type EquipmentItem = { name: string; model?: string };
 
+function collapseNumberedEquipment(equipment: EquipmentItem[]): EquipmentItem[] {
+  if (!equipment.length) return equipment;
+
+  const byPrefix = new Map<string, { num: number; model?: string }[]>();
+  const prefixOrder: string[] = [];
+
+  for (const item of equipment) {
+    const match = item.name.match(/^(.*?)\s+(\d+)$/);
+    if (!match) return equipment;
+    const prefix = match[1].trim();
+    const num = parseInt(match[2], 10);
+    if (!byPrefix.has(prefix)) {
+      byPrefix.set(prefix, []);
+      prefixOrder.push(prefix);
+    }
+    byPrefix.get(prefix)!.push({ num, model: item.model });
+  }
+
+  const collapsed: EquipmentItem[] = [];
+  for (const prefix of prefixOrder) {
+    const items = byPrefix.get(prefix)!.sort((a, b) => a.num - b.num);
+    let start = items[0].num;
+    let prev = items[0].num;
+    let startModel = items[0].model;
+
+    const flush = (end: number, endModel?: string) => {
+      const model = startModel || endModel;
+      collapsed.push(
+        start === end
+          ? { name: `${prefix} ${start}`, model }
+          : { name: `${prefix} ${start} - ${end}`, model }
+      );
+    };
+
+    for (let i = 1; i < items.length; i++) {
+      if (items[i].num !== prev + 1) {
+        flush(prev, items[i - 1].model);
+        start = items[i].num;
+        startModel = items[i].model;
+      }
+      prev = items[i].num;
+    }
+    flush(prev, items[items.length - 1].model);
+  }
+
+  return collapsed;
+}
+
 type Room = {
   id: string;
   code: string;
@@ -84,7 +132,7 @@ function RoomsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => {
-            const equipment = Array.isArray(r.equipment) ? r.equipment : [];
+            const equipment = collapseNumberedEquipment(Array.isArray(r.equipment) ? r.equipment : []);
             return (
               <article key={r.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:border-gold hover:shadow-md">
                 <div className="flex flex-1 flex-col p-5">
