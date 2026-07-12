@@ -189,6 +189,8 @@ function ReservePage() {
     }
     toast.success(t("f_success"));
     setSuccess(true);
+    // Kick the email queue so approval emails go out immediately
+    processPendingEmails().catch(() => {});
     setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
     setEquipByRoom({});
   };
