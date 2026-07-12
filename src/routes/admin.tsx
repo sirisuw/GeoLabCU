@@ -160,6 +160,7 @@ function AdminPage() {
         </div>
       )}
 
+      <SettingsPanel />
       <RoleAssigner />
       <PendingEmailsPanel />
     </div>
