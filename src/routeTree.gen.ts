@@ -9,22 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TaRouteImport } from './routes/ta'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as RoomsRouteImport } from './routes/rooms'
 import { Route as ReserveRouteImport } from './routes/reserve'
-import { Route as OfficerRouteImport } from './routes/officer'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApproveRoleTokenRouteImport } from './routes/approve.$role.$token'
 
-const TaRoute = TaRouteImport.update({
-  id: '/ta',
-  path: '/ta',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -43,11 +36,6 @@ const RoomsRoute = RoomsRouteImport.update({
 const ReserveRoute = ReserveRouteImport.update({
   id: '/reserve',
   path: '/reserve',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OfficerRoute = OfficerRouteImport.update({
-  id: '/officer',
-  path: '/officer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -75,24 +63,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/officer': typeof OfficerRoute
   '/reserve': typeof ReserveRoute
   '/rooms': typeof RoomsRoute
   '/rules': typeof RulesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/ta': typeof TaRoute
   '/approve/$role/$token': typeof ApproveRoleTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/officer': typeof OfficerRoute
   '/reserve': typeof ReserveRoute
   '/rooms': typeof RoomsRoute
   '/rules': typeof RulesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/ta': typeof TaRoute
   '/approve/$role/$token': typeof ApproveRoleTokenRoute
 }
 export interface FileRoutesById {
@@ -100,12 +84,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/officer': typeof OfficerRoute
   '/reserve': typeof ReserveRoute
   '/rooms': typeof RoomsRoute
   '/rules': typeof RulesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/ta': typeof TaRoute
   '/approve/$role/$token': typeof ApproveRoleTokenRoute
 }
 export interface FileRouteTypes {
@@ -114,36 +96,30 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/officer'
     | '/reserve'
     | '/rooms'
     | '/rules'
     | '/sitemap.xml'
-    | '/ta'
     | '/approve/$role/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/auth'
-    | '/officer'
     | '/reserve'
     | '/rooms'
     | '/rules'
     | '/sitemap.xml'
-    | '/ta'
     | '/approve/$role/$token'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
-    | '/officer'
     | '/reserve'
     | '/rooms'
     | '/rules'
     | '/sitemap.xml'
-    | '/ta'
     | '/approve/$role/$token'
   fileRoutesById: FileRoutesById
 }
@@ -151,24 +127,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
-  OfficerRoute: typeof OfficerRoute
   ReserveRoute: typeof ReserveRoute
   RoomsRoute: typeof RoomsRoute
   RulesRoute: typeof RulesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  TaRoute: typeof TaRoute
   ApproveRoleTokenRoute: typeof ApproveRoleTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/ta': {
-      id: '/ta'
-      path: '/ta'
-      fullPath: '/ta'
-      preLoaderRoute: typeof TaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -195,13 +162,6 @@ declare module '@tanstack/react-router' {
       path: '/reserve'
       fullPath: '/reserve'
       preLoaderRoute: typeof ReserveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/officer': {
-      id: '/officer'
-      path: '/officer'
-      fullPath: '/officer'
-      preLoaderRoute: typeof OfficerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -239,24 +199,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
-  OfficerRoute: OfficerRoute,
   ReserveRoute: ReserveRoute,
   RoomsRoute: RoomsRoute,
   RulesRoute: RulesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  TaRoute: TaRoute,
   ApproveRoleTokenRoute: ApproveRoleTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
