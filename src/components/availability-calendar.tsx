@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,8 +46,14 @@ export function AvailabilityCalendar({
   onPickSlot?: (startIso: string, endIso: string) => void;
 }) {
   const { t, lang } = useI18n();
+  const [hydrated, setHydrated] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const weekEnd = useMemo(() => addDays(weekStart, DAYS), [weekStart]);
+
+  useEffect(() => {
+    setHydrated(true);
+    setWeekStart(startOfWeek(new Date()));
+  }, []);
 
   const { data: reservations = [], isLoading } = useQuery({
     queryKey: ["room-availability", roomId, weekStart.toISOString()],
@@ -117,6 +123,22 @@ export function AvailabilityCalendar({
     const e = new Date(s.getTime() + SLOT_MINUTES * 60_000);
     onPickSlot(formatLocalInput(s), formatLocalInput(e));
   };
+
+  if (!hydrated) {
+    return (
+      <div className="rounded-2xl border border-border bg-card p-4 md:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">{t("cal_title")}</h2>
+            <p className="text-xs text-muted-foreground">
+              {roomId ? t("cal_click_free") : t("cal_hint")}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 h-48 rounded-md bg-muted/40" />
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 md:p-6">
