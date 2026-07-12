@@ -2,10 +2,13 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, X, LogOut, CalendarDays, Users, Mail, Phone, Building2, Inbox, ChevronDown, ChevronRight } from "lucide-react";
+import { Check, X, LogOut, CalendarDays, Users, Mail, Phone, Building2, Inbox, ChevronDown, ChevronRight, Settings, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { processPendingEmails } from "@/lib/emails.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -77,6 +80,7 @@ function AdminPage() {
     if (error) return toast.error(error.message);
     toast.success(lang === "th" ? "อัปเดตแล้ว" : "Updated");
     qc.invalidateQueries({ queryKey: ["reservations"] });
+    processPendingEmails().catch(() => {});
   };
 
   const signOut = async () => {
@@ -156,6 +160,7 @@ function AdminPage() {
         </div>
       )}
 
+      <SettingsPanel />
       <RoleAssigner />
       <PendingEmailsPanel />
     </div>
@@ -312,7 +317,112 @@ function RoleAssigner() {
   );
 }
 
+type NotifSetting = { id: string; role: "staff" | "admin"; name: string; email: string; active: boolean };
+type AdvisorRow = { id: string; name_th: string; name_en: string; email: string | null; active: boolean; sort_order: number };
 
+function SettingsPanel() {
+  const { lang } = useI18n();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const { data: notif = [] } = useQuery({
+    queryKey: ["notification_settings"],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("notification_settings" as never).select("*").order("role").order("name");
+      if (error) throw error;
+      return data as unknown as NotifSetting[];
+    },
+  });
+  const { data: advisors = [] } = useQuery({
+    queryKey: ["advisors_admin"],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("advisors" as never).select("*").order("sort_order");
+      if (error) throw error;
+      return data as unknown as AdvisorRow[];
+    },
+  });
+
+  const updateNotif = async (id: string, patch: Partial<NotifSetting>) => {
+    const { error } = await supabase.from("notification_settings" as never).update(patch as never).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["notification_settings"] });
+  };
+  const updateAdvisor = async (id: string, patch: Partial<AdvisorRow>) => {
+    const { error } = await supabase.from("advisors" as never).update(patch as never).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["advisors_admin"] });
+  };
+
+  const flushQueue = async () => {
+    setSending(true);
+    const res = await processPendingEmails();
+    setSending(false);
+    if (res.ok) toast.success(`Sent ${res.sent}, failed ${res.failed}`);
+    else toast.error(res.error ?? "Send failed");
+  };
+
+  return (
+    <section className="mt-6 rounded-xl border border-border bg-card">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between p-5 text-left">
+        <div className="flex items-center gap-3">
+          <Settings className="h-5 w-5 text-gold" />
+          <div>
+            <h2 className="text-lg font-semibold">{lang === "th" ? "ตั้งค่าอีเมลผู้รับ" : "Recipient email settings"}</h2>
+            <p className="text-xs text-muted-foreground">{lang === "th" ? "แก้ไขอีเมลเจ้าหน้าที่ ผู้ดูแล และอาจารย์ที่ปรึกษา" : "Edit staff, admin, and advisor emails"}</p>
+          </div>
+        </div>
+        {open ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+      </button>
+      {open && (
+        <div className="space-y-8 border-t border-border p-5">
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{lang === "th" ? "เจ้าหน้าที่ห้องปฏิบัติการ + ผู้ดูแล" : "Lab staff + admin"}</h3>
+              <Button size="sm" variant="outline" onClick={flushQueue} disabled={sending}>
+                <Send className="mr-1.5 h-3.5 w-3.5" />{sending ? "…" : lang === "th" ? "ส่งอีเมลที่ค้าง" : "Send queued emails"}
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {notif.map((n) => (
+                <div key={n.id} className="grid gap-2 rounded-md border border-border bg-background p-3 md:grid-cols-[100px_1fr_2fr_80px]">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground self-center">{n.role}</span>
+                  <Input defaultValue={n.name} onBlur={(e) => e.target.value !== n.name && updateNotif(n.id, { name: e.target.value })} />
+                  <Input defaultValue={n.email} onBlur={(e) => e.target.value !== n.email && updateNotif(n.id, { email: e.target.value })} />
+                  <div className="flex items-center gap-2 self-center">
+                    <Switch checked={n.active} onCheckedChange={(v) => updateNotif(n.id, { active: v })} />
+                    <span className="text-xs text-muted-foreground">{n.active ? "on" : "off"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-sm font-semibold">{lang === "th" ? "อาจารย์ที่ปรึกษา" : "Project advisors"}</h3>
+            <div className="space-y-2">
+              {advisors.map((a) => (
+                <div key={a.id} className="grid gap-2 rounded-md border border-border bg-background p-3 md:grid-cols-[2fr_2fr_80px]">
+                  <div className="self-center text-sm">
+                    <div>{a.name_th}</div>
+                    <div className="text-xs text-muted-foreground">{a.name_en}</div>
+                  </div>
+                  <Input defaultValue={a.email ?? ""} placeholder="email@chula.ac.th" onBlur={(e) => e.target.value !== (a.email ?? "") && updateAdvisor(a.id, { email: e.target.value || null })} />
+                  <div className="flex items-center gap-2 self-center">
+                    <Switch checked={a.active} onCheckedChange={(v) => updateAdvisor(a.id, { active: v })} />
+                    <span className="text-xs text-muted-foreground">{a.active ? "on" : "off"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return <div className="flex items-center gap-1.5 text-muted-foreground"><span className="text-gold">{icon}</span>{text}</div>;
