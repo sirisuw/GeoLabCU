@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { ADVISORS } from "@/lib/advisors";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +40,7 @@ const formSchema = z.object({
   requester_email: z.string().trim().email().max(255),
   requester_phone: z.string().trim().min(1).max(30),
   user_status: z.enum(USER_STATUSES),
-  advisor_name: z.string().trim().min(1).max(200),
+  advisor_id: z.string().uuid("Please select your advisor"),
   equipment: z.string().trim().max(2000).optional(),
   sample_count: z.string().trim().min(1).max(200),
   purpose: z.string().trim().min(3).max(1000),
@@ -50,6 +50,8 @@ const formSchema = z.object({
   confirmed_contact: z.literal(true, { errorMap: () => ({ message: "Please confirm you contacted the officer and advisor" }) }),
   confirmed_calendar: z.literal(true, { errorMap: () => ({ message: "Please confirm you checked the calendar" }) }),
 });
+
+type Advisor = { id: string; name_th: string; name_en: string; email: string | null };
 
 function ReservePage() {
   const { t, lang } = useI18n();
@@ -77,13 +79,22 @@ function ReservePage() {
     },
   });
 
+  const { data: advisors = [] } = useQuery({
+    queryKey: ["advisors"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("advisors" as never).select("id, name_th, name_en, email").eq("active", true).order("sort_order");
+      if (error) throw error;
+      return data as unknown as Advisor[];
+    },
+  });
+
   const [form, setForm] = useState({
     room_ids: preselectedRoom ? [preselectedRoom] : ([] as string[]),
     requester_name: "",
     requester_email: "",
     requester_phone: "",
     user_status: "" as "" | (typeof USER_STATUSES)[number],
-    advisor_name: "",
+    advisor_id: "",
     sample_count: "",
     purpose: "",
     attendees: "1",
@@ -140,6 +151,8 @@ function ReservePage() {
       }
     }
     setSubmitting(true);
+    const advisor = advisors.find((a) => a.id === payload.advisor_id);
+    const advisorName = advisor ? `${advisor.name_th} (${advisor.name_en})` : "";
     const rows = payload.room_ids.map((room_id) => {
       const sel = getEquip(room_id);
       const equipment_selected = [
@@ -151,7 +164,8 @@ function ReservePage() {
         requester_name: payload.requester_name,
         requester_email: payload.requester_email,
         requester_phone: payload.requester_phone,
-        advisor_name: payload.advisor_name,
+        advisor_id: payload.advisor_id,
+        advisor_name: advisorName,
         purpose: payload.purpose,
         attendees: payload.attendees,
         start_at: new Date(payload.start_at).toISOString(),
@@ -262,11 +276,11 @@ function ReservePage() {
               </Select>
             </Field>
             <Field label={t("f_advisor")} required>
-              <Select value={form.advisor_name} onValueChange={(v) => set("advisor_name", v)}>
+              <Select value={form.advisor_id} onValueChange={(v) => set("advisor_id", v)}>
                 <SelectTrigger><SelectValue placeholder={t("f_advisor_ph")} /></SelectTrigger>
                 <SelectContent className="max-h-72">
-                  {ADVISORS.map((a) => (
-                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  {advisors.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{lang === "th" ? a.name_th : a.name_en}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      advisors: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string | null
+          id: string
+          name_en: string
+          name_th: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email?: string | null
+          id?: string
+          name_en: string
+          name_th: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string | null
+          id?: string
+          name_en?: string
+          name_th?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       equipment_maintenance: {
         Row: {
           created_at: string
@@ -75,6 +108,36 @@ export type Database = {
           count?: number
           last_no_show_at?: string | null
           student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_settings: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string
           updated_at?: string
         }
         Relationships: []
@@ -151,6 +214,7 @@ export type Database = {
           admin_notified_at: string | null
           advisor_decided_at: string | null
           advisor_email: string | null
+          advisor_id: string | null
           advisor_name: string | null
           advisor_status: string
           advisor_token: string
@@ -192,6 +256,7 @@ export type Database = {
           admin_notified_at?: string | null
           advisor_decided_at?: string | null
           advisor_email?: string | null
+          advisor_id?: string | null
           advisor_name?: string | null
           advisor_status?: string
           advisor_token?: string
@@ -233,6 +298,7 @@ export type Database = {
           admin_notified_at?: string | null
           advisor_decided_at?: string | null
           advisor_email?: string | null
+          advisor_id?: string | null
           advisor_name?: string | null
           advisor_status?: string
           advisor_token?: string
@@ -269,6 +335,13 @@ export type Database = {
           user_status?: Database["public"]["Enums"]["user_status"] | null
         }
         Relationships: [
+          {
+            foreignKeyName: "reservations_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "advisors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reservations_room_id_fkey"
             columns: ["room_id"]
@@ -536,6 +609,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      render_reservation_details: {
+        Args: {
+          r: Database["public"]["Tables"]["reservations"]["Row"]
+          room_code: string
+          room_name: string
+        }
+        Returns: string
       }
       run_reservation_maintenance: { Args: never; Returns: number }
     }
