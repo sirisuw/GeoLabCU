@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { processPendingEmails } from "@/lib/emails.functions";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
