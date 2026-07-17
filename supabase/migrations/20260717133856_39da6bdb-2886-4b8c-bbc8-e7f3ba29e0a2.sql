@@ -1,0 +1,1 @@
+UPDATE public.pending_emails SET status='pending' WHERE status='queued'; ALTER TABLE public.pending_emails ALTER COLUMN status SET DEFAULT 'pending';
