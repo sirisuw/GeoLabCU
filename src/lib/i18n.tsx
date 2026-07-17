@@ -119,7 +119,7 @@ export const dict = {
   rules_hours_t: { th: "เวลาทำการ", en: "Working hours" },
   rules_hours_d: { th: "จันทร์–ศุกร์ 09:00–16:00 น. หากต้องใช้งานนอกเวลาทำการ ต้องได้รับอนุญาตจากหัวหน้าห้องปฏิบัติการและหัวหน้าภาควิชา", en: "Mon–Fri 09:00–16:00. Use outside these hours requires approval from the head of lab and the head of department." },
   rules_advance_t: { th: "การจองล่วงหน้า", en: "Advance booking" },
-  rules_advance_d: { th: "ต้องจองล่วงหน้าอย่างน้อย 1 วันทำการ", en: "Bookings must be made at least 1 working day in advance." },
+  rules_advance_d: { th: "ต้องจองล่วงหน้าอย่างน้อย 1 วันทำการ ยกเว้นคำขอที่ส่งก่อนเวลา 7:00 น. สามารถใช้ห้องได้ในวันเดียวกัน", en: "Bookings must be made at least 1 working day in advance, except requests submitted before 7:00 AM, which may be for the same day." },
   rules_noshow_t: { th: "การมาสาย / ไม่มาใช้งาน", en: "Late arrival / no-show" },
   rules_noshow_d: { th: "การมาสาย ไม่มาใช้งาน หรือใช้งานสั้นเกินไปจนเสียโอกาสของผู้อื่น จะถูกระงับสิทธิ์การใช้ห้องเป็นเวลา 2 สัปดาห์", en: "Late arrival, no-show, or unreasonably short use will result in a 2-week suspension of lab access." },
   rules_cancel_t: { th: "การยกเลิก", en: "Cancellation" },

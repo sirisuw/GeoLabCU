@@ -176,12 +176,16 @@ export function AvailabilityCalendar({
         <div className="min-w-[640px]">
           <div className="grid" style={{ gridTemplateColumns: `56px repeat(${DAYS}, minmax(0, 1fr))` }}>
             <div />
-            {days.map((d, i) => (
-              <div key={i} className="px-1 pb-2 text-center text-xs font-medium">
-                <div>{weekdays[i]}</div>
-                <div className="text-muted-foreground">{d.getDate()} {months[d.getMonth()]}</div>
-              </div>
-            ))}
+            {days.map((d, i) => {
+              const today = new Date();
+              const isToday = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+              return (
+                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-gold/15 text-foreground")}>
+                  <div className={cn(isToday && "text-gold")}>{weekdays[i]}</div>
+                  <div className={cn("text-muted-foreground", isToday && "font-semibold text-gold")}>{d.getDate()} {months[d.getMonth()]}</div>
+                </div>
+              );
+            })}
             {SLOTS.map(({ hour, minute }) => {
               const label = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
               const isHourStart = minute === 0;
