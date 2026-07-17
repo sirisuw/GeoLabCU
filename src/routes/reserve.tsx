@@ -84,7 +84,7 @@ function ReservePage() {
   const { data: advisors = [] } = useQuery({
     queryKey: ["advisors"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("advisors" as never).select("id, name_th, name_en, email").eq("active", true).order("sort_order");
+      const { data, error } = await supabase.from("advisors_public" as never).select("id, name_th, name_en").eq("active", true).order("sort_order");
       if (error) throw error;
       return data as unknown as Advisor[];
     },
