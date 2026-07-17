@@ -27,7 +27,7 @@ export const processPendingEmails = createServerFn({ method: "POST" }).handler(a
   const { data: rows, error } = await supabaseAdmin
     .from("pending_emails")
     .select("id, to_email, subject, body_html")
-    .eq("status", "pending")
+    .in("status", ["pending", "queued"])
     .limit(20);
   if (error) return { ok: false, error: error.message };
 
