@@ -343,6 +343,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reservations_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "advisors_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reservations_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
@@ -481,6 +488,30 @@ export type Database = {
       }
     }
     Views: {
+      advisors_public: {
+        Row: {
+          active: boolean | null
+          id: string | null
+          name_en: string | null
+          name_th: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          id?: string | null
+          name_en?: string | null
+          name_th?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          id?: string | null
+          name_en?: string | null
+          name_th?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       public_reservation_slots: {
         Row: {
           end_at: string | null
