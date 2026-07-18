@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, UserRound, Phone, CalendarDays } from "lucide-react";
+import { UserRound, Phone, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,16 @@ type Room = {
 
 type RoomHead = { room_id: string; advisor_id: string; name_th: string; name_en: string };
 
+function floorOf(code: string): number {
+  const m = code.match(/\d/);
+  return m ? parseInt(m[0], 10) : 0;
+}
+
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
 function RoomsPage() {
   const { t, lang } = useI18n();
@@ -122,6 +132,20 @@ function RoomsPage() {
 
   const filtered = rooms.filter((r) => filter === "all" || r.type === filter);
 
+  const grouped = useMemo(() => {
+    const byFloor = new Map<number, Room[]>();
+    for (const r of filtered) {
+      const f = floorOf(r.code);
+      if (!byFloor.has(f)) byFloor.set(f, []);
+      byFloor.get(f)!.push(r);
+    }
+    return Array.from(byFloor.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([floor, list]) => ({
+        floor,
+        rooms: list.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true })),
+      }));
+  }, [filtered]);
 
   return (
     <div className="container-page py-14">
@@ -145,119 +169,154 @@ function RoomsPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-80 animate-pulse rounded-xl bg-muted" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-32 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
+      ) : grouped.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted-foreground">
+          —
+        </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 [grid-auto-rows:1fr]">
-          {filtered.map((r) => {
-            const equipment = collapseNumberedEquipment(Array.isArray(r.equipment) ? r.equipment : []);
-            const visibleChips = equipment.slice(0, 3);
-            const overflow = equipment.length - visibleChips.length;
-            const typeLabel = r.type === "pc" ? t("rooms_filter_pc") : t("rooms_filter_lab");
-            return (
-              <article
-                key={r.id}
-                className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-150 hover:-translate-y-0.5 hover:border-[color:var(--chula-pink)] hover:shadow-md"
-              >
-                <div className="flex h-full flex-col p-5">
-                  <span className="font-display text-base font-bold uppercase tracking-widest text-[color:var(--chula-pink)]">
-                    {r.code}
+        <div className="space-y-16">
+          {grouped.map(({ floor, rooms: floorRooms }) => (
+            <section key={floor}>
+              <div className="sticky top-16 z-10 -mx-4 mb-6 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-display text-4xl font-bold leading-none md:text-5xl">
+                        {lang === "th" ? `${t("floor_label")} ${floor}` : ordinal(floor)}
+                      </span>
+                      {lang !== "th" && (
+                        <span className="text-sm uppercase tracking-widest text-muted-foreground">{t("floor_label")}</span>
+                      )}
+                    </div>
+                    <div className="mt-2 h-px w-16 bg-[color:var(--chula-pink)]" />
+                  </div>
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                    {floorRooms.length} {t("floor_count")}
                   </span>
-
-                  <h3 className="mt-1 line-clamp-2 min-h-[3.25rem] text-lg font-semibold leading-snug">
-                    {lang === "th" ? r.name_th : r.name_en}
-                  </h3>
-
-                  <div className="mt-1">
-                    <span className="inline-flex items-center rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
-                      {typeLabel}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
-                    {lang === "th" ? r.description_th : r.description_en}
-                  </p>
-
-                  <p className="mt-2 flex min-h-[1.25rem] items-center gap-1 text-xs text-muted-foreground">
-                    {r.location && (<><MapPin className="h-3.5 w-3.5" /> {r.location}</>)}
-                  </p>
-
-                  {(() => {
-                    const roomHeads = headsByRoom[r.id] ?? [];
-                    const showHeads = roomHeads.length > 0 || r.head_of_lab;
-                    if (!showHeads && !r.contact_phone) return null;
-                    return (
-                      <dl className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs">
-                        {showHeads && (
-                          <div className="flex gap-2">
-                            <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                              <UserRound className="h-3.5 w-3.5" /> {t("room_head")}
-                            </dt>
-                            <dd className="flex-1">
-                              {roomHeads.length > 0
-                                ? roomHeads.map((h) => (lang === "th" ? h.name_th : h.name_en)).join(", ")
-                                : r.head_of_lab}
-                            </dd>
-                          </div>
-                        )}
-                        {r.contact_phone && (
-                          <div className="flex gap-2">
-                            <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                              <Phone className="h-3.5 w-3.5" /> {t("room_phone")}
-                            </dt>
-                            <dd className="flex-1">
-                              <a href={`tel:${r.contact_phone.replace(/[^0-9+]/g, "")}`} className="hover:text-primary">
-                                {r.contact_phone}
-                              </a>
-                            </dd>
-                          </div>
-                        )}
-                      </dl>
-                    );
-                  })()}
-
-
-                  <div className="mt-3 flex min-h-[2rem] flex-wrap gap-1.5 overflow-hidden">
-                    {visibleChips.map((e, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex max-w-full items-center truncate rounded-full bg-[color:var(--chula-pink-soft)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--chula-pink)]"
-                      >
-                        {e.name}
-                      </span>
-                    ))}
-                    {overflow > 0 && (
-                      <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                        +{overflow}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-auto flex flex-col gap-2 pt-4">
-                    <Button asChild className="btn-cta w-full">
-                      <Link to="/reserve" search={{ room: r.id }}>{t("rooms_reserve")}</Link>
-                    </Button>
-                    {r.google_calendar_url && (
-                      <a
-                        href={r.google_calendar_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-foreground/80 transition hover:border-gold hover:text-foreground"
-                      >
-                        <CalendarDays className="h-3.5 w-3.5" /> {t("room_calendar")}
-                      </a>
-                    )}
-                  </div>
                 </div>
-              </article>
-            );
-          })}
+              </div>
+
+              <div className="space-y-4">
+                {floorRooms.map((r) => (
+                  <RoomCard
+                    key={r.id}
+                    room={r}
+                    heads={headsByRoom[r.id] ?? []}
+                    lang={lang}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
+function RoomCard({
+  room: r,
+  heads: roomHeads,
+  lang,
+  t,
+}: {
+  room: Room;
+  heads: RoomHead[];
+  lang: "th" | "en";
+  t: (k: never) => string;
+}) {
+  const equipment = collapseNumberedEquipment(Array.isArray(r.equipment) ? r.equipment : []);
+  const visibleChips = equipment.slice(0, 5);
+  const overflow = equipment.length - visibleChips.length;
+  const typeLabel = r.type === "pc" ? (t as (k: string) => string)("rooms_filter_pc") : (t as (k: string) => string)("rooms_filter_lab");
+  const _t = t as (k: string) => string;
+
+  const headText = roomHeads.length > 0
+    ? roomHeads.map((h) => (lang === "th" ? h.name_th : h.name_en)).join(", ")
+    : r.head_of_lab;
+
+  return (
+    <article className="group relative overflow-hidden rounded-xl border border-border bg-card transition duration-150 hover:-translate-y-0.5 hover:shadow-md">
+      <span className="absolute inset-y-0 left-0 w-0 bg-[color:var(--chula-pink)] transition-all duration-150 group-hover:w-1" />
+
+      <div className="flex flex-col gap-5 p-5 md:grid md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center md:gap-6 md:p-6">
+        {/* LEFT: code + type */}
+        <div className="flex items-center justify-between md:block">
+          <div className="font-display text-4xl font-bold leading-none text-[color:var(--chula-pink)] md:text-5xl">
+            {r.code}
+          </div>
+          <div className="md:mt-3">
+            <span className="inline-flex items-center rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+              {typeLabel}
+            </span>
+          </div>
+        </div>
+
+        {/* MIDDLE: name + meta + chips */}
+        <div className="min-w-0 md:border-l md:border-border/60 md:pl-6">
+          <h3 className="line-clamp-2 text-lg font-semibold leading-snug">
+            {lang === "th" ? r.name_th : r.name_en}
+          </h3>
+
+          <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
+            {headText && (
+              <div className="flex min-w-0 items-center gap-1.5">
+                <UserRound className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{headText}</span>
+              </div>
+            )}
+            {r.contact_phone && (
+              <div className="flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                <a href={`tel:${r.contact_phone.replace(/[^0-9+]/g, "")}`} className="hover:text-primary">
+                  {r.contact_phone}
+                </a>
+              </div>
+            )}
+          </dl>
+
+          {equipment.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {visibleChips.map((e, i) => (
+                <span
+                  key={i}
+                  className="inline-flex max-w-[16rem] items-center truncate rounded-full bg-[color:var(--chula-pink-soft)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--chula-pink)] md:max-w-none"
+                >
+                  {e.name}
+                </span>
+              ))}
+              {overflow > 0 && (
+                <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  +{overflow}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: actions */}
+        <div className="flex flex-col gap-2 md:w-44 md:items-stretch md:border-l md:border-border/60 md:pl-6">
+          <Button asChild className="btn-cta w-full">
+            <Link to="/reserve" search={{ room: r.id }}>{_t("rooms_reserve")}</Link>
+          </Button>
+          {r.google_calendar_url && (
+            <a
+              href={r.google_calendar_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium text-foreground/80 transition hover:border-gold hover:text-foreground"
+            >
+              <CalendarDays className="h-3.5 w-3.5" /> {_t("room_calendar")}
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
