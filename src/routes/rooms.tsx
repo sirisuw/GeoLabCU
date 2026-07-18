@@ -81,7 +81,11 @@ type Room = {
   contact_phone: string | null;
   google_calendar_url: string | null;
   equipment: EquipmentItem[] | null;
+  lab_head_ids: string[] | null;
 };
+
+type RoomHead = { room_id: string; advisor_id: string; name_th: string; name_en: string };
+
 
 function RoomsPage() {
   const { t, lang } = useI18n();
