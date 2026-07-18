@@ -89,6 +89,13 @@ export type Database = {
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "equipment_maintenance_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["room_id"]
+          },
         ]
       }
       no_show_counters: {
@@ -374,11 +381,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reservations_advisor_id_fkey"
+            columns: ["advisor_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["advisor_id"]
+          },
+          {
             foreignKeyName: "reservations_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["room_id"]
           },
         ]
       }
@@ -421,6 +442,13 @@ export type Database = {
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "room_staff_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["room_id"]
+          },
         ]
       }
       rooms: {
@@ -437,10 +465,12 @@ export type Database = {
           google_calendar_url: string | null
           head_of_lab: string | null
           id: string
+          lab_head_ids: string[]
           location: string | null
           name_en: string
           name_th: string
           officer_group: Database["public"]["Enums"]["officer_group"]
+          responsible_staff_ids: string[]
           staff_in_charge: string | null
           type: Database["public"]["Enums"]["room_type"]
         }
@@ -457,10 +487,12 @@ export type Database = {
           google_calendar_url?: string | null
           head_of_lab?: string | null
           id?: string
+          lab_head_ids?: string[]
           location?: string | null
           name_en: string
           name_th: string
           officer_group?: Database["public"]["Enums"]["officer_group"]
+          responsible_staff_ids?: string[]
           staff_in_charge?: string | null
           type: Database["public"]["Enums"]["room_type"]
         }
@@ -477,10 +509,12 @@ export type Database = {
           google_calendar_url?: string | null
           head_of_lab?: string | null
           id?: string
+          lab_head_ids?: string[]
           location?: string | null
           name_en?: string
           name_th?: string
           officer_group?: Database["public"]["Enums"]["officer_group"]
+          responsible_staff_ids?: string[]
           staff_in_charge?: string | null
           type?: Database["public"]["Enums"]["room_type"]
         }
@@ -566,6 +600,13 @@ export type Database = {
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["room_id"]
+          },
         ]
       }
       public_reservations: {
@@ -597,6 +638,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["room_id"]
           },
         ]
       }
@@ -630,7 +678,23 @@ export type Database = {
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms_public_heads"
+            referencedColumns: ["room_id"]
+          },
         ]
+      }
+      rooms_public_heads: {
+        Row: {
+          advisor_id: string | null
+          name_en: string | null
+          name_th: string | null
+          room_id: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
