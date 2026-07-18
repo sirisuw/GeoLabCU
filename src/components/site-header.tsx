@@ -28,8 +28,8 @@ export function SiteHeader() {
             <Link
               key={l.to}
               to={l.to}
-              className="rounded-md px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:bg-secondary hover:text-foreground"
-              activeProps={{ className: "bg-secondary text-foreground" }}
+              className="relative rounded-md px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--chula-pink)] focus-visible:ring-offset-2"
+              activeProps={{ className: "text-foreground after:absolute after:left-3 after:right-3 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-[color:var(--chula-pink)]" }}
               activeOptions={{ exact: l.to === "/" }}
             >
               {t(l.k)}
