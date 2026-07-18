@@ -104,7 +104,24 @@ function RoomsPage() {
     },
   });
 
+  const { data: heads = [] } = useQuery({
+    queryKey: ["room-heads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rooms_public_heads" as never)
+        .select("room_id, advisor_id, name_th, name_en");
+      if (error) throw error;
+      return (data as unknown as RoomHead[]);
+    },
+  });
+
+  const headsByRoom = heads.reduce<Record<string, RoomHead[]>>((acc, h) => {
+    (acc[h.room_id] ||= []).push(h);
+    return acc;
+  }, {});
+
   const filtered = rooms.filter((r) => filter === "all" || r.type === filter);
+
 
   return (
     <div className="container-page py-14">
