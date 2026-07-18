@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, UserRound, Wrench, Phone, CalendarDays } from "lucide-react";
+import { MapPin, UserRound, Phone, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,11 @@ type Room = {
   contact_phone: string | null;
   google_calendar_url: string | null;
   equipment: EquipmentItem[] | null;
+  lab_head_ids: string[] | null;
 };
+
+type RoomHead = { room_id: string; advisor_id: string; name_th: string; name_en: string };
+
 
 function RoomsPage() {
   const { t, lang } = useI18n();
@@ -100,7 +104,24 @@ function RoomsPage() {
     },
   });
 
+  const { data: heads = [] } = useQuery({
+    queryKey: ["room-heads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rooms_public_heads" as never)
+        .select("room_id, advisor_id, name_th, name_en");
+      if (error) throw error;
+      return (data as unknown as RoomHead[]);
+    },
+  });
+
+  const headsByRoom = heads.reduce<Record<string, RoomHead[]>>((acc, h) => {
+    (acc[h.room_id] ||= []).push(h);
+    return acc;
+  }, {});
+
   const filtered = rooms.filter((r) => filter === "all" || r.type === filter);
+
 
   return (
     <div className="container-page py-14">
@@ -164,38 +185,40 @@ function RoomsPage() {
                     {r.location && (<><MapPin className="h-3.5 w-3.5" /> {r.location}</>)}
                   </p>
 
-                  {(r.head_of_lab || r.staff_in_charge || r.contact_phone) && (
-                    <dl className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs">
-                      {r.head_of_lab && (
-                        <div className="flex gap-2">
-                          <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                            <UserRound className="h-3.5 w-3.5" /> {t("room_head")}
-                          </dt>
-                          <dd className="flex-1">{r.head_of_lab}</dd>
-                        </div>
-                      )}
-                      {r.staff_in_charge && (
-                        <div className="flex gap-2">
-                          <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                            <Wrench className="h-3.5 w-3.5" /> {t("room_staff")}
-                          </dt>
-                          <dd className="flex-1">{r.staff_in_charge}</dd>
-                        </div>
-                      )}
-                      {r.contact_phone && (
-                        <div className="flex gap-2">
-                          <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                            <Phone className="h-3.5 w-3.5" /> {t("room_phone")}
-                          </dt>
-                          <dd className="flex-1">
-                            <a href={`tel:${r.contact_phone.replace(/[^0-9+]/g, "")}`} className="hover:text-primary">
-                              {r.contact_phone}
-                            </a>
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                  )}
+                  {(() => {
+                    const roomHeads = headsByRoom[r.id] ?? [];
+                    const showHeads = roomHeads.length > 0 || r.head_of_lab;
+                    if (!showHeads && !r.contact_phone) return null;
+                    return (
+                      <dl className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs">
+                        {showHeads && (
+                          <div className="flex gap-2">
+                            <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
+                              <UserRound className="h-3.5 w-3.5" /> {t("room_head")}
+                            </dt>
+                            <dd className="flex-1">
+                              {roomHeads.length > 0
+                                ? roomHeads.map((h) => (lang === "th" ? h.name_th : h.name_en)).join(", ")
+                                : r.head_of_lab}
+                            </dd>
+                          </div>
+                        )}
+                        {r.contact_phone && (
+                          <div className="flex gap-2">
+                            <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
+                              <Phone className="h-3.5 w-3.5" /> {t("room_phone")}
+                            </dt>
+                            <dd className="flex-1">
+                              <a href={`tel:${r.contact_phone.replace(/[^0-9+]/g, "")}`} className="hover:text-primary">
+                                {r.contact_phone}
+                              </a>
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    );
+                  })()}
+
 
                   <div className="mt-3 flex min-h-[2rem] flex-wrap gap-1.5 overflow-hidden">
                     {visibleChips.map((e, i) => (
