@@ -83,17 +83,17 @@ function RoomTypeRow({ icon, title, count }: { icon: React.ReactNode; title: str
   return (
     <div className="flex items-center justify-between rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 px-4 py-3">
       <div className="flex items-center gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-md bg-gold text-gold-foreground">{icon}</span>
+        <span className="grid h-9 w-9 place-items-center rounded-md bg-[color:var(--chula-pink)] text-white">{icon}</span>
         <span className="text-sm font-medium">{title}</span>
       </div>
-      <span className="font-display text-2xl font-semibold text-gold">{count}</span>
+      <span className="font-display text-2xl font-semibold text-[color:var(--chula-pink)]">{count}</span>
     </div>
   );
 }
 
 function StepCard({ n, icon, title, desc }: { n: string; icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 transition hover:border-gold hover:shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-6 transition duration-150 hover:-translate-y-0.5 hover:border-[color:var(--chula-pink)] hover:shadow-md">
       <div className="flex items-center justify-between">
         <span className="grid h-10 w-10 place-items-center rounded-md bg-primary text-primary-foreground">{icon}</span>
         <span className="font-display text-sm font-semibold tracking-widest text-muted-foreground">{n}</span>
