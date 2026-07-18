@@ -203,7 +203,7 @@ function RoomsPage() {
                   )}
 
                   <div className="mt-4 flex flex-col gap-2">
-                    <Button asChild className="w-full">
+                    <Button asChild className="btn-cta w-full">
                       <Link to="/reserve" search={{ room: r.id }}>{t("rooms_reserve")}</Link>
                     </Button>
                     {r.google_calendar_url && (
