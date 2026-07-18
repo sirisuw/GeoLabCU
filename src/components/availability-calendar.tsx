@@ -41,9 +41,11 @@ function formatLocalInput(d: Date) {
 export function AvailabilityCalendar({
   roomId,
   onPickSlot,
+  selectedStartIso,
 }: {
   roomId: string | undefined;
   onPickSlot?: (startIso: string, endIso: string) => void;
+  selectedStartIso?: string;
 }) {
   const { t, lang } = useI18n();
   const [hydrated, setHydrated] = useState(false);
