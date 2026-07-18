@@ -402,7 +402,8 @@ function ReservePage() {
           </div>
 
           <Field label={t("f_purpose")} required>
-            <Textarea value={form.purpose} onChange={(e) => set("purpose", e.target.value)} rows={4} maxLength={1000} required />
+            <Textarea value={form.purpose} onChange={(e) => set("purpose", e.target.value.slice(0, 500))} rows={4} maxLength={500} required />
+            <p className="text-right text-xs text-muted-foreground">{form.purpose.length}/500</p>
           </Field>
 
           <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
