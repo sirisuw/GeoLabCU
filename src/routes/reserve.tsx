@@ -60,6 +60,7 @@ function ReservePage() {
   const { room: preselectedRoom } = Route.useSearch();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [trackingToken, setTrackingToken] = useState<string | null>(null);
 
   // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow.
   const earliestAllowed = (() => {
