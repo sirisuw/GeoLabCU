@@ -29,14 +29,14 @@ function Home() {
           height={1280}
           className="absolute inset-0 h-full w-full object-cover opacity-25"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-primary/70" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-[color:var(--chula-pink)]/45" />
         <div className="container-page relative grid gap-10 py-20 md:grid-cols-[1.2fr_1fr] md:py-28">
           <div>
-            <p className="eyebrow text-gold">{t("hero_eyebrow")}</p>
+            <p className="eyebrow text-[color:var(--chula-pink)]">{t("hero_eyebrow")}</p>
             <h1 className="mt-4 text-4xl font-semibold leading-[1.1] md:text-6xl">{t("hero_title")}</h1>
             <p className="mt-5 max-w-xl text-base text-primary-foreground/80 md:text-lg">{t("hero_sub")}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90">
+              <Button asChild size="lg" className="btn-cta hover:opacity-95">
                 <Link to="/reserve">{t("hero_cta_reserve")} <ArrowRight className="ml-1 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
@@ -45,8 +45,8 @@ function Home() {
             </div>
           </div>
           <div className="hidden self-end md:block">
-            <div className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-5 backdrop-blur">
-              <p className="eyebrow text-gold/80">{lang === "th" ? "ภาพรวมห้อง" : "Room Overview"}</p>
+            <div className="rounded-xl border border-[color:var(--chula-pink)]/40 bg-primary-foreground/5 p-5 backdrop-blur">
+              <p className="eyebrow text-[color:var(--chula-pink)]">{lang === "th" ? "ภาพรวมห้อง" : "Room Overview"}</p>
               <div className="mt-4 space-y-3">
                 <RoomTypeRow icon={<Microscope className="h-5 w-5" />} title={lang === "th" ? "ห้องทั้งหมด" : "Total rooms"} count="20" />
               </div>
