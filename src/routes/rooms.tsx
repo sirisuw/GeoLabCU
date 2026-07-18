@@ -130,25 +130,39 @@ function RoomsPage() {
           ))}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 [grid-auto-rows:1fr]">
           {filtered.map((r) => {
             const equipment = collapseNumberedEquipment(Array.isArray(r.equipment) ? r.equipment : []);
+            const visibleChips = equipment.slice(0, 3);
+            const overflow = equipment.length - visibleChips.length;
+            const typeLabel = r.type === "pc" ? t("rooms_filter_pc") : t("rooms_filter_lab");
             return (
-              <article key={r.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-150 hover:-translate-y-0.5 hover:border-[color:var(--chula-pink)] hover:shadow-md">
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="font-display text-base font-bold uppercase tracking-widest text-[color:var(--chula-pink)]">{r.code}</span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" /> {r.capacity} {t("rooms_seats")}
+              <article
+                key={r.id}
+                className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-150 hover:-translate-y-0.5 hover:border-[color:var(--chula-pink)] hover:shadow-md"
+              >
+                <div className="flex h-full flex-col p-5">
+                  <span className="font-display text-base font-bold uppercase tracking-widest text-[color:var(--chula-pink)]">
+                    {r.code}
+                  </span>
+
+                  <h3 className="mt-1 line-clamp-2 min-h-[3.25rem] text-lg font-semibold leading-snug">
+                    {lang === "th" ? r.name_th : r.name_en}
+                  </h3>
+
+                  <div className="mt-1">
+                    <span className="inline-flex items-center rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                      {typeLabel}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold leading-snug">{lang === "th" ? r.name_th : r.name_en}</h3>
-                  <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{lang === "th" ? r.description_th : r.description_en}</p>
-                  {r.location && (
-                    <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5" /> {r.location}
-                    </p>
-                  )}
+
+                  <p className="mt-3 line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
+                    {lang === "th" ? r.description_th : r.description_en}
+                  </p>
+
+                  <p className="mt-2 flex min-h-[1.25rem] items-center gap-1 text-xs text-muted-foreground">
+                    {r.location && (<><MapPin className="h-3.5 w-3.5" /> {r.location}</>)}
+                  </p>
 
                   {(r.head_of_lab || r.staff_in_charge || r.contact_phone) && (
                     <dl className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs">
@@ -183,26 +197,23 @@ function RoomsPage() {
                     </dl>
                   )}
 
-                  {equipment.length > 0 && (
-                    <div className="mt-3 border-t border-border/60 pt-3">
-                      <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                        <Beaker className="h-3.5 w-3.5" /> {t("room_equipment")}
-                      </p>
-                      <ul className="space-y-0.5 text-xs">
-                        {equipment.map((e, i) => (
-                          <li key={i} className="flex gap-1">
-                            <span className="text-gold">•</span>
-                            <span>
-                              <span className="font-medium">{e.name}</span>
-                              {e.model && <span className="text-muted-foreground"> — {e.model}</span>}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <div className="mt-3 flex min-h-[2rem] flex-wrap gap-1.5 overflow-hidden">
+                    {visibleChips.map((e, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex max-w-full items-center truncate rounded-full bg-[color:var(--chula-pink-soft)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--chula-pink)]"
+                      >
+                        {e.name}
+                      </span>
+                    ))}
+                    {overflow > 0 && (
+                      <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        +{overflow}
+                      </span>
+                    )}
+                  </div>
 
-                  <div className="mt-4 flex flex-col gap-2">
+                  <div className="mt-auto flex flex-col gap-2 pt-4">
                     <Button asChild className="btn-cta w-full">
                       <Link to="/reserve" search={{ room: r.id }}>{t("rooms_reserve")}</Link>
                     </Button>
