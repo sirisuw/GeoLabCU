@@ -65,7 +65,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   const { t } = useI18n();
   return (
-    <footer className="mt-24 border-t border-border/60 bg-surface">
+    <footer className="mt-24 border-t-2 border-[color:var(--chula-pink)] bg-surface">
       <div className="container-page grid gap-8 py-10 md:grid-cols-3">
         <div>
           <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">Geo Labs</p>
