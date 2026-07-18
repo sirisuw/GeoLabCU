@@ -281,6 +281,7 @@ function ReservePage() {
 
           <AvailabilityCalendar
             roomId={form.room_ids[0]}
+            selectedStartIso={form.start_at || undefined}
             onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
           />
 
