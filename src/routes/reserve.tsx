@@ -215,27 +215,36 @@ function ReservePage() {
             {lang === "th" ? "หมายเลขคำขอจะถูกส่งไปยังอีเมลของคุณเมื่อได้รับการยืนยัน" : "You will receive a confirmation email when reviewed."}
           </p>
 
-          <div className="mt-8 rounded-xl border border-border bg-muted/30 p-4 text-left">
+          {trackingToken && (
+            <a
+              href={`/status/${trackingToken}`}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-[color:var(--chula-pink)] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+            >
+              {lang === "th" ? "ติดตามสถานะคำขอ →" : "Track your request →"}
+            </a>
+          )}
+
+          <div className="mt-6 rounded-xl border border-border bg-muted/30 p-4 text-left">
             <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {lang === "th" ? "ขั้นตอนการอนุมัติ" : "Approval pipeline"}
             </p>
             <ol className="space-y-2 text-sm">
               <li className="flex items-center gap-3">
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-[color:var(--chula-pink)] text-xs font-semibold text-white">1</span>
-                <span className="font-medium text-[color:var(--chula-pink)]">{lang === "th" ? "รอเจ้าหน้าที่ตรวจสอบ" : "Awaiting staff review"}</span>
+                <span className="font-medium text-[color:var(--chula-pink)]">{lang === "th" ? "อาจารย์ที่ปรึกษาอนุมัติ" : "Advisor approval"}</span>
               </li>
               <li className="flex items-center gap-3">
                 <span className="grid h-6 w-6 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground">2</span>
-                <span className="text-muted-foreground">{lang === "th" ? "รอผู้ดูแลยืนยัน" : "Awaiting admin confirmation"}</span>
+                <span className="text-muted-foreground">{lang === "th" ? "เจ้าหน้าที่อนุมัติ" : "Staff approval"}</span>
               </li>
               <li className="flex items-center gap-3">
                 <span className="grid h-6 w-6 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground">3</span>
-                <span className="text-muted-foreground">{lang === "th" ? "ยืนยันแล้ว" : "Confirmed"}</span>
+                <span className="text-muted-foreground">{lang === "th" ? "ผู้ดูแลยืนยัน" : "Admin confirmation"}</span>
               </li>
             </ol>
           </div>
 
-          <Button className="btn-cta mt-8" onClick={() => setSuccess(false)}>
+          <Button variant="outline" className="mt-6" onClick={() => { setSuccess(false); setTrackingToken(null); }}>
             {lang === "th" ? "จองห้องเพิ่ม" : "Book another room"}
           </Button>
         </div>
