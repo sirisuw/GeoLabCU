@@ -200,6 +200,9 @@ export function AvailabilityCalendar({
                     const r = roomId ? isBooked(d, hour, minute) : null;
                     const cutoff = isBeforeCutoff(d, hour, minute);
                     const disabled = !roomId || !!r || cutoff;
+                    const slotStart = new Date(d);
+                    slotStart.setHours(hour, minute, 0, 0);
+                    const isSelected = !!selectedStartIso && formatLocalInput(slotStart) === selectedStartIso;
                     const cls = !roomId
                       ? "bg-muted/40"
                       : cutoff
@@ -208,7 +211,9 @@ export function AvailabilityCalendar({
                       ? r.status === "approved"
                         ? "bg-destructive/70"
                         : "bg-gold/70"
-                      : "bg-muted hover:bg-primary/20 cursor-pointer";
+                      : isSelected
+                      ? "bg-[color:var(--chula-pink)] ring-2 ring-[color:var(--chula-pink)] cursor-pointer"
+                      : "bg-muted hover:bg-[color:var(--chula-pink)]/25 cursor-pointer";
                     return (
                       <button
                         key={`c-${d.toISOString()}-${label}`}
