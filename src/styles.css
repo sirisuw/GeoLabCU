@@ -93,6 +93,8 @@
   --accent-foreground: oklch(0.96 0.01 85);
   --gold: oklch(0.78 0.14 75);
   --gold-foreground: oklch(0.2 0.04 260);
+  --chula-pink: oklch(0.68 0.12 355);         /* Slightly desaturated for dark mode */
+  --chula-pink-soft: oklch(0.32 0.06 355);
   --destructive: oklch(0.65 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(1 0 0 / 12%);
