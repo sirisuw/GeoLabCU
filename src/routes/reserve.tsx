@@ -427,7 +427,7 @@ function ReservePage() {
             </ul>
           </div>
 
-          <Button type="submit" size="lg" disabled={submitting} className="w-full md:w-auto">
+          <Button type="submit" size="lg" disabled={submitting} className="btn-cta w-full md:w-auto">
             {submitting ? t("f_sending") : t("f_submit")}
           </Button>
 
