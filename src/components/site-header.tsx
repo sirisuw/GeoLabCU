@@ -53,7 +53,7 @@ export function SiteHeader() {
               EN
             </button>
           </div>
-          <Button asChild size="sm" className="hidden sm:inline-flex">
+          <Button asChild size="sm" className="btn-cta hidden sm:inline-flex">
             <Link to="/reserve">{t("nav_reserve")}</Link>
           </Button>
         </div>
