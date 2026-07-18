@@ -667,6 +667,8 @@ export type Database = {
         | "expired"
         | "completed"
         | "no_show"
+        | "pending_advisor"
+        | "pending_staff"
       room_type: "lab" | "pc"
       user_status: "bachelor" | "master" | "phd" | "staff"
     }
@@ -811,6 +813,8 @@ export const Constants = {
         "expired",
         "completed",
         "no_show",
+        "pending_advisor",
+        "pending_staff",
       ],
       room_type: ["lab", "pc"],
       user_status: ["bachelor", "master", "phd", "staff"],
