@@ -126,5 +126,20 @@
   font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-muted-foreground);
+  color: var(--color-chula-pink);
+}
+
+@utility btn-cta {
+  background-color: var(--color-chula-pink);
+  color: #ffffff;
+  transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+@utility btn-cta {
+  &:hover {
+    background-color: color-mix(in oklab, var(--color-chula-pink) 88%, black);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-chula-pink);
+    outline-offset: 2px;
+  }
 }
