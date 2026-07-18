@@ -37,6 +37,8 @@
   --color-ring: var(--ring);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-chula-pink: var(--chula-pink);
+  --color-chula-pink-soft: var(--chula-pink-soft);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --font-sans: "Prompt", ui-sans-serif, system-ui, sans-serif;
@@ -63,6 +65,8 @@
   --accent-foreground: oklch(0.28 0.07 260);
   --gold: oklch(0.72 0.14 75);                /* warm brass gold */
   --gold-foreground: oklch(0.2 0.04 260);
+  --chula-pink: oklch(0.62 0.17 355);         /* Chulalongkorn signature pink */
+  --chula-pink-soft: oklch(0.94 0.04 355);
   --destructive: oklch(0.55 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(0.88 0.02 85);
@@ -89,6 +93,8 @@
   --accent-foreground: oklch(0.96 0.01 85);
   --gold: oklch(0.78 0.14 75);
   --gold-foreground: oklch(0.2 0.04 260);
+  --chula-pink: oklch(0.68 0.12 355);         /* Slightly desaturated for dark mode */
+  --chula-pink-soft: oklch(0.32 0.06 355);
   --destructive: oklch(0.65 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(1 0 0 / 12%);
@@ -120,5 +126,20 @@
   font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-muted-foreground);
+  color: var(--color-chula-pink);
+}
+
+@utility btn-cta {
+  background-color: var(--color-chula-pink);
+  color: #ffffff;
+  transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+@utility btn-cta {
+  &:hover {
+    background-color: color-mix(in oklab, var(--color-chula-pink) 88%, black);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-chula-pink);
+    outline-offset: 2px;
+  }
 }

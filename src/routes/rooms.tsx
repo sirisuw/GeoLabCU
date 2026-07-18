@@ -115,7 +115,7 @@ function RoomsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded px-3 py-1.5 transition ${filter === f ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-secondary"}`}
+              className={`rounded px-3 py-1.5 transition ${filter === f ? "bg-[color:var(--chula-pink)] text-white" : "text-foreground/70 hover:bg-secondary"}`}
             >
               {f === "all" ? t("rooms_filter_all") : f === "lab" ? t("rooms_filter_lab") : t("rooms_filter_pc")}
             </button>
@@ -134,10 +134,10 @@ function RoomsPage() {
           {filtered.map((r) => {
             const equipment = collapseNumberedEquipment(Array.isArray(r.equipment) ? r.equipment : []);
             return (
-              <article key={r.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:border-gold hover:shadow-md">
+              <article key={r.id} className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-150 hover:-translate-y-0.5 hover:border-[color:var(--chula-pink)] hover:shadow-md">
                 <div className="flex flex-1 flex-col p-5">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-display text-xs font-semibold uppercase tracking-widest text-gold">{r.code}</span>
+                    <span className="font-display text-base font-bold uppercase tracking-widest text-[color:var(--chula-pink)]">{r.code}</span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" /> {r.capacity} {t("rooms_seats")}
                     </span>
@@ -203,7 +203,7 @@ function RoomsPage() {
                   )}
 
                   <div className="mt-4 flex flex-col gap-2">
-                    <Button asChild className="w-full">
+                    <Button asChild className="btn-cta w-full">
                       <Link to="/reserve" search={{ room: r.id }}>{t("rooms_reserve")}</Link>
                     </Button>
                     {r.google_calendar_url && (

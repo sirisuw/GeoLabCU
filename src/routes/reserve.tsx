@@ -198,12 +198,39 @@ function ReservePage() {
 
   if (success) {
     return (
-      <div className="container-page py-24">
-        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-10 text-center">
-          <CheckCircle2 className="mx-auto h-14 w-14 text-gold" />
-          <h1 className="mt-4 text-2xl font-semibold">{t("f_success")}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{lang === "th" ? "หมายเลขคำขอจะถูกส่งไปยังอีเมลของคุณเมื่อได้รับการยืนยัน" : "You will receive a confirmation email when reviewed."}</p>
-          <Button className="mt-6" onClick={() => setSuccess(false)}>{lang === "th" ? "จองห้องอื่น" : "Book another room"}</Button>
+      <div className="container-page py-16">
+        <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[color:var(--chula-pink)]/15">
+            <CheckCircle2 className="h-10 w-10 text-[color:var(--chula-pink)]" />
+          </div>
+          <h1 className="mt-5 text-2xl font-semibold">{t("f_success")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {lang === "th" ? "หมายเลขคำขอจะถูกส่งไปยังอีเมลของคุณเมื่อได้รับการยืนยัน" : "You will receive a confirmation email when reviewed."}
+          </p>
+
+          <div className="mt-8 rounded-xl border border-border bg-muted/30 p-4 text-left">
+            <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              {lang === "th" ? "ขั้นตอนการอนุมัติ" : "Approval pipeline"}
+            </p>
+            <ol className="space-y-2 text-sm">
+              <li className="flex items-center gap-3">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[color:var(--chula-pink)] text-xs font-semibold text-white">1</span>
+                <span className="font-medium text-[color:var(--chula-pink)]">{lang === "th" ? "รอเจ้าหน้าที่ตรวจสอบ" : "Awaiting staff review"}</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="grid h-6 w-6 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground">2</span>
+                <span className="text-muted-foreground">{lang === "th" ? "รอผู้ดูแลยืนยัน" : "Awaiting admin confirmation"}</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="grid h-6 w-6 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground">3</span>
+                <span className="text-muted-foreground">{lang === "th" ? "ยืนยันแล้ว" : "Confirmed"}</span>
+              </li>
+            </ol>
+          </div>
+
+          <Button className="btn-cta mt-8" onClick={() => setSuccess(false)}>
+            {lang === "th" ? "จองห้องเพิ่ม" : "Book another room"}
+          </Button>
         </div>
       </div>
     );
@@ -254,6 +281,7 @@ function ReservePage() {
 
           <AvailabilityCalendar
             roomId={form.room_ids[0]}
+            selectedStartIso={form.start_at || undefined}
             onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
           />
 
@@ -374,7 +402,8 @@ function ReservePage() {
           </div>
 
           <Field label={t("f_purpose")} required>
-            <Textarea value={form.purpose} onChange={(e) => set("purpose", e.target.value)} rows={4} maxLength={1000} required />
+            <Textarea value={form.purpose} onChange={(e) => set("purpose", e.target.value.slice(0, 500))} rows={4} maxLength={500} required />
+            <p className="text-right text-xs text-muted-foreground">{form.purpose.length}/500</p>
           </Field>
 
           <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
@@ -398,7 +427,7 @@ function ReservePage() {
             </ul>
           </div>
 
-          <Button type="submit" size="lg" disabled={submitting} className="w-full md:w-auto">
+          <Button type="submit" size="lg" disabled={submitting} className="btn-cta w-full md:w-auto">
             {submitting ? t("f_sending") : t("f_submit")}
           </Button>
 

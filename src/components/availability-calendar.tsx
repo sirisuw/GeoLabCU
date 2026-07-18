@@ -41,9 +41,11 @@ function formatLocalInput(d: Date) {
 export function AvailabilityCalendar({
   roomId,
   onPickSlot,
+  selectedStartIso,
 }: {
   roomId: string | undefined;
   onPickSlot?: (startIso: string, endIso: string) => void;
+  selectedStartIso?: string;
 }) {
   const { t, lang } = useI18n();
   const [hydrated, setHydrated] = useState(false);
@@ -180,9 +182,9 @@ export function AvailabilityCalendar({
               const today = new Date();
               const isToday = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
               return (
-                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-gold/15 text-foreground")}>
-                  <div className={cn(isToday && "text-gold")}>{weekdays[i]}</div>
-                  <div className={cn("text-muted-foreground", isToday && "font-semibold text-gold")}>{d.getDate()} {months[d.getMonth()]}</div>
+                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-[color:var(--chula-pink)]/10 text-foreground")}>
+                  <div className={cn(isToday && "text-[color:var(--chula-pink)] font-semibold")}>{weekdays[i]}</div>
+                  <div className={cn("text-muted-foreground", isToday && "font-semibold text-[color:var(--chula-pink)]")}>{d.getDate()} {months[d.getMonth()]}</div>
                 </div>
               );
             })}
@@ -198,6 +200,9 @@ export function AvailabilityCalendar({
                     const r = roomId ? isBooked(d, hour, minute) : null;
                     const cutoff = isBeforeCutoff(d, hour, minute);
                     const disabled = !roomId || !!r || cutoff;
+                    const slotStart = new Date(d);
+                    slotStart.setHours(hour, minute, 0, 0);
+                    const isSelected = !!selectedStartIso && formatLocalInput(slotStart) === selectedStartIso;
                     const cls = !roomId
                       ? "bg-muted/40"
                       : cutoff
@@ -206,7 +211,9 @@ export function AvailabilityCalendar({
                       ? r.status === "approved"
                         ? "bg-destructive/70"
                         : "bg-gold/70"
-                      : "bg-muted hover:bg-primary/20 cursor-pointer";
+                      : isSelected
+                      ? "bg-[color:var(--chula-pink)] ring-2 ring-[color:var(--chula-pink)] cursor-pointer"
+                      : "bg-muted hover:bg-[color:var(--chula-pink)]/25 cursor-pointer";
                     return (
                       <button
                         key={`c-${d.toISOString()}-${label}`}

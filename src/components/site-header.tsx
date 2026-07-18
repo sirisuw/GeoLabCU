@@ -28,8 +28,8 @@ export function SiteHeader() {
             <Link
               key={l.to}
               to={l.to}
-              className="rounded-md px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:bg-secondary hover:text-foreground"
-              activeProps={{ className: "bg-secondary text-foreground" }}
+              className="relative rounded-md px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--chula-pink)] focus-visible:ring-offset-2"
+              activeProps={{ className: "text-foreground after:absolute after:left-3 after:right-3 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-[color:var(--chula-pink)]" }}
               activeOptions={{ exact: l.to === "/" }}
             >
               {t(l.k)}
@@ -53,7 +53,7 @@ export function SiteHeader() {
               EN
             </button>
           </div>
-          <Button asChild size="sm" className="hidden sm:inline-flex">
+          <Button asChild size="sm" className="btn-cta hidden sm:inline-flex">
             <Link to="/reserve">{t("nav_reserve")}</Link>
           </Button>
         </div>
@@ -65,7 +65,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   const { t } = useI18n();
   return (
-    <footer className="mt-24 border-t border-border/60 bg-surface">
+    <footer className="mt-24 border-t-2 border-[color:var(--chula-pink)] bg-surface">
       <div className="container-page grid gap-8 py-10 md:grid-cols-3">
         <div>
           <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">Geo Labs</p>
