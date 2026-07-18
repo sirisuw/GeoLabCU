@@ -142,7 +142,11 @@ export const dict = {
 
   type_lab: { th: "ห้องปฏิบัติการ", en: "Laboratory" },
   type_pc: { th: "ห้องคอมพิวเตอร์", en: "Computer room" },
+
+  floor_label: { th: "ชั้น", en: "Floor" },
+  floor_count: { th: "ห้อง", en: "rooms" },
 } satisfies Dict;
+
 
 export type DictKey = keyof typeof dict;
 
