@@ -212,10 +212,12 @@ export type Database = {
           admin_note: string | null
           admin_notes: string | null
           admin_notified_at: string | null
+          admin_reminded_at: string | null
           advisor_decided_at: string | null
           advisor_email: string | null
           advisor_id: string | null
           advisor_name: string | null
+          advisor_reminded_at: string | null
           advisor_status: string
           advisor_token: string
           attendees: number
@@ -234,11 +236,16 @@ export type Database = {
           professor_endorsement: string
           professor_note: string | null
           purpose: string
+          rejected_stage: string | null
+          rejection_reason: string | null
           requester_email: string
           requester_name: string
           requester_phone: string | null
           room_id: string
           sample_count: string | null
+          staff_decided_at: string | null
+          staff_decided_by: string | null
+          staff_reminded_at: string | null
           start_at: string
           status: Database["public"]["Enums"]["reservation_status"]
           student_id: string | null
@@ -247,6 +254,7 @@ export type Database = {
           ta_note: string | null
           ta_status: string
           ta_token: string
+          tracking_token: string
           updated_at: string
           user_status: Database["public"]["Enums"]["user_status"] | null
         }
@@ -254,10 +262,12 @@ export type Database = {
           admin_note?: string | null
           admin_notes?: string | null
           admin_notified_at?: string | null
+          admin_reminded_at?: string | null
           advisor_decided_at?: string | null
           advisor_email?: string | null
           advisor_id?: string | null
           advisor_name?: string | null
+          advisor_reminded_at?: string | null
           advisor_status?: string
           advisor_token?: string
           attendees?: number
@@ -276,11 +286,16 @@ export type Database = {
           professor_endorsement?: string
           professor_note?: string | null
           purpose: string
+          rejected_stage?: string | null
+          rejection_reason?: string | null
           requester_email: string
           requester_name: string
           requester_phone?: string | null
           room_id: string
           sample_count?: string | null
+          staff_decided_at?: string | null
+          staff_decided_by?: string | null
+          staff_reminded_at?: string | null
           start_at: string
           status?: Database["public"]["Enums"]["reservation_status"]
           student_id?: string | null
@@ -289,6 +304,7 @@ export type Database = {
           ta_note?: string | null
           ta_status?: string
           ta_token?: string
+          tracking_token?: string
           updated_at?: string
           user_status?: Database["public"]["Enums"]["user_status"] | null
         }
@@ -296,10 +312,12 @@ export type Database = {
           admin_note?: string | null
           admin_notes?: string | null
           admin_notified_at?: string | null
+          admin_reminded_at?: string | null
           advisor_decided_at?: string | null
           advisor_email?: string | null
           advisor_id?: string | null
           advisor_name?: string | null
+          advisor_reminded_at?: string | null
           advisor_status?: string
           advisor_token?: string
           attendees?: number
@@ -318,11 +336,16 @@ export type Database = {
           professor_endorsement?: string
           professor_note?: string | null
           purpose?: string
+          rejected_stage?: string | null
+          rejection_reason?: string | null
           requester_email?: string
           requester_name?: string
           requester_phone?: string | null
           room_id?: string
           sample_count?: string | null
+          staff_decided_at?: string | null
+          staff_decided_by?: string | null
+          staff_reminded_at?: string | null
           start_at?: string
           status?: Database["public"]["Enums"]["reservation_status"]
           student_id?: string | null
@@ -331,6 +354,7 @@ export type Database = {
           ta_note?: string | null
           ta_status?: string
           ta_token?: string
+          tracking_token?: string
           updated_at?: string
           user_status?: Database["public"]["Enums"]["user_status"] | null
         }
@@ -615,12 +639,18 @@ export type Database = {
         Returns: boolean
       }
       decide_reservation_by_token: {
-        Args: { _decision: string; _role: string; _token: string }
-        Returns: boolean
+        Args: {
+          _decision: string
+          _reason?: string
+          _role: string
+          _token: string
+        }
+        Returns: Json
       }
       get_reservation_by_token: {
         Args: { _role: string; _token: string }
         Returns: {
+          advisor_decided_at: string
           advisor_name: string
           advisor_status: string
           attendees: number
@@ -629,6 +659,33 @@ export type Database = {
           purpose: string
           requester_email: string
           requester_name: string
+          start_at: string
+          status: string
+          ta_status: string
+        }[]
+      }
+      get_reservation_by_tracking_token: {
+        Args: { _token: string }
+        Returns: {
+          admin_decided_at: string
+          advisor_decided_at: string
+          advisor_name: string
+          advisor_status: string
+          attendees: number
+          created_at: string
+          end_at: string
+          equipment: string
+          expires_at: string
+          has_advisor: boolean
+          id: string
+          purpose: string
+          rejected_stage: string
+          rejection_reason: string
+          requester_name: string
+          room_code: string
+          room_name_en: string
+          room_name_th: string
+          staff_decided_at: string
           start_at: string
           status: string
           ta_status: string
@@ -667,6 +724,8 @@ export type Database = {
         | "expired"
         | "completed"
         | "no_show"
+        | "pending_advisor"
+        | "pending_staff"
       room_type: "lab" | "pc"
       user_status: "bachelor" | "master" | "phd" | "staff"
     }
@@ -811,6 +870,8 @@ export const Constants = {
         "expired",
         "completed",
         "no_show",
+        "pending_advisor",
+        "pending_staff",
       ],
       room_type: ["lab", "pc"],
       user_status: ["bachelor", "master", "phd", "staff"],
