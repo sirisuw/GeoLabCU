@@ -311,8 +311,11 @@ function ReservePage() {
           <AvailabilityCalendar
             roomId={form.room_ids[0]}
             selectedStartIso={form.start_at || undefined}
+            maxDurationMinutes={rooms.find((r) => r.id === form.room_ids[0])?.type === "pc" ? 240 : undefined}
+            onPickRange={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
             onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
           />
+
 
 
           <div className="grid gap-4 md:grid-cols-2">
