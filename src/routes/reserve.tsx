@@ -137,9 +137,21 @@ function ReservePage() {
     if (new Date(payload.start_at) < earliestAllowed) {
       toast.error(
         lang === "th"
-          ? "หากจองหลัง 7:00 น. เริ่มใช้ห้องได้ตั้งแต่วันถัดไปเท่านั้น"
-          : "Bookings made after 7:00 AM can only start from the next day.",
+          ? "หากจองหลัง 7:00 น. เริ่มใช้ห้องได้ตั้งแต่วันทำการถัดไปเท่านั้น"
+          : "Bookings made after 7:00 AM can only start from the next working day.",
       );
+      return;
+    }
+    const startD = new Date(payload.start_at);
+    const endD = new Date(payload.end_at);
+    if ([0, 6].includes(startD.getDay()) || [0, 6].includes(endD.getDay())) {
+      toast.error(lang === "th" ? "ไม่สามารถจองวันเสาร์-อาทิตย์ได้" : "Weekend bookings are not available");
+      return;
+    }
+    const sMin = startD.getHours() * 60 + startD.getMinutes();
+    const eMin = endD.getHours() * 60 + endD.getMinutes();
+    if (sMin < 9 * 60 || sMin >= 16 * 60 || eMin > 16 * 60 || eMin <= 9 * 60) {
+      toast.error(lang === "th" ? "เวลาต้องอยู่ระหว่าง 09:00–16:00 น." : "Times must be within 09:00–16:00");
       return;
     }
     // Per-room equipment validation
