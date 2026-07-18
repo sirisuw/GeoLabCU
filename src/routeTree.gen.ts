@@ -16,6 +16,7 @@ import { Route as ReserveRouteImport } from './routes/reserve'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StatusTokenRouteImport } from './routes/status.$token'
 import { Route as ApproveRoleTokenRouteImport } from './routes/approve.$role.$token'
 import { Route as ApiPublicHooksSendEmailsRouteImport } from './routes/api/public/hooks/send-emails'
 
@@ -54,6 +55,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatusTokenRoute = StatusTokenRouteImport.update({
+  id: '/status/$token',
+  path: '/status/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApproveRoleTokenRoute = ApproveRoleTokenRouteImport.update({
   id: '/approve/$role/$token',
   path: '/approve/$role/$token',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/rooms': typeof RoomsRoute
   '/rules': typeof RulesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status/$token': typeof StatusTokenRoute
   '/approve/$role/$token': typeof ApproveRoleTokenRoute
   '/api/public/hooks/send-emails': typeof ApiPublicHooksSendEmailsRoute
 }
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/rooms': typeof RoomsRoute
   '/rules': typeof RulesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status/$token': typeof StatusTokenRoute
   '/approve/$role/$token': typeof ApproveRoleTokenRoute
   '/api/public/hooks/send-emails': typeof ApiPublicHooksSendEmailsRoute
 }
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/rooms': typeof RoomsRoute
   '/rules': typeof RulesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status/$token': typeof StatusTokenRoute
   '/approve/$role/$token': typeof ApproveRoleTokenRoute
   '/api/public/hooks/send-emails': typeof ApiPublicHooksSendEmailsRoute
 }
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/rules'
     | '/sitemap.xml'
+    | '/status/$token'
     | '/approve/$role/$token'
     | '/api/public/hooks/send-emails'
   fileRoutesByTo: FileRoutesByTo
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/rules'
     | '/sitemap.xml'
+    | '/status/$token'
     | '/approve/$role/$token'
     | '/api/public/hooks/send-emails'
   id:
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/rules'
     | '/sitemap.xml'
+    | '/status/$token'
     | '/approve/$role/$token'
     | '/api/public/hooks/send-emails'
   fileRoutesById: FileRoutesById
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   RoomsRoute: typeof RoomsRoute
   RulesRoute: typeof RulesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StatusTokenRoute: typeof StatusTokenRoute
   ApproveRoleTokenRoute: typeof ApproveRoleTokenRoute
   ApiPublicHooksSendEmailsRoute: typeof ApiPublicHooksSendEmailsRoute
 }
@@ -199,6 +212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/status/$token': {
+      id: '/status/$token'
+      path: '/status/$token'
+      fullPath: '/status/$token'
+      preLoaderRoute: typeof StatusTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/approve/$role/$token': {
       id: '/approve/$role/$token'
       path: '/approve/$role/$token'
@@ -224,6 +244,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoomsRoute: RoomsRoute,
   RulesRoute: RulesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatusTokenRoute: StatusTokenRoute,
   ApproveRoleTokenRoute: ApproveRoleTokenRoute,
   ApiPublicHooksSendEmailsRoute: ApiPublicHooksSendEmailsRoute,
 }
