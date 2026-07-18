@@ -62,16 +62,17 @@ function ReservePage() {
   const [success, setSuccess] = useState(false);
   const [trackingToken, setTrackingToken] = useState<string | null>(null);
 
-  // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow.
+  // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow. Weekends skipped.
   const earliestAllowed = (() => {
     const now = new Date();
     const d = new Date(now);
     d.setHours(0, 0, 0, 0);
     if (now.getHours() >= 7) d.setDate(d.getDate() + 1);
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
     return d;
   })();
   const pad = (n: number) => String(n).padStart(2, "0");
-  const minStartLocal = `${earliestAllowed.getFullYear()}-${pad(earliestAllowed.getMonth() + 1)}-${pad(earliestAllowed.getDate())}T00:00`;
+  const minStartLocal = `${earliestAllowed.getFullYear()}-${pad(earliestAllowed.getMonth() + 1)}-${pad(earliestAllowed.getDate())}T09:00`;
 
   const { data: rooms = [] } = useQuery({
     queryKey: ["rooms"],
@@ -136,9 +137,21 @@ function ReservePage() {
     if (new Date(payload.start_at) < earliestAllowed) {
       toast.error(
         lang === "th"
-          ? "หากจองหลัง 7:00 น. เริ่มใช้ห้องได้ตั้งแต่วันถัดไปเท่านั้น"
-          : "Bookings made after 7:00 AM can only start from the next day.",
+          ? "หากจองหลัง 7:00 น. เริ่มใช้ห้องได้ตั้งแต่วันทำการถัดไปเท่านั้น"
+          : "Bookings made after 7:00 AM can only start from the next working day.",
       );
+      return;
+    }
+    const startD = new Date(payload.start_at);
+    const endD = new Date(payload.end_at);
+    if ([0, 6].includes(startD.getDay()) || [0, 6].includes(endD.getDay())) {
+      toast.error(lang === "th" ? "ไม่สามารถจองวันเสาร์-อาทิตย์ได้" : "Weekend bookings are not available");
+      return;
+    }
+    const sMin = startD.getHours() * 60 + startD.getMinutes();
+    const eMin = endD.getHours() * 60 + endD.getMinutes();
+    if (sMin < 9 * 60 || sMin >= 16 * 60 || eMin > 16 * 60 || eMin <= 9 * 60) {
+      toast.error(lang === "th" ? "เวลาต้องอยู่ระหว่าง 09:00–16:00 น." : "Times must be within 09:00–16:00");
       return;
     }
     // Per-room equipment validation
@@ -298,8 +311,11 @@ function ReservePage() {
           <AvailabilityCalendar
             roomId={form.room_ids[0]}
             selectedStartIso={form.start_at || undefined}
+            maxDurationMinutes={rooms.find((r) => r.id === form.room_ids[0])?.type === "pc" ? 240 : undefined}
+            onPickRange={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
             onPickSlot={(s, e) => setForm((f) => ({ ...f, start_at: s, end_at: e }))}
           />
+
 
 
           <div className="grid gap-4 md:grid-cols-2">
