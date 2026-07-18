@@ -185,38 +185,40 @@ function RoomsPage() {
                     {r.location && (<><MapPin className="h-3.5 w-3.5" /> {r.location}</>)}
                   </p>
 
-                  {(r.head_of_lab || r.staff_in_charge || r.contact_phone) && (
-                    <dl className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs">
-                      {r.head_of_lab && (
-                        <div className="flex gap-2">
-                          <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                            <UserRound className="h-3.5 w-3.5" /> {t("room_head")}
-                          </dt>
-                          <dd className="flex-1">{r.head_of_lab}</dd>
-                        </div>
-                      )}
-                      {r.staff_in_charge && (
-                        <div className="flex gap-2">
-                          <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                            <Wrench className="h-3.5 w-3.5" /> {t("room_staff")}
-                          </dt>
-                          <dd className="flex-1">{r.staff_in_charge}</dd>
-                        </div>
-                      )}
-                      {r.contact_phone && (
-                        <div className="flex gap-2">
-                          <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
-                            <Phone className="h-3.5 w-3.5" /> {t("room_phone")}
-                          </dt>
-                          <dd className="flex-1">
-                            <a href={`tel:${r.contact_phone.replace(/[^0-9+]/g, "")}`} className="hover:text-primary">
-                              {r.contact_phone}
-                            </a>
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                  )}
+                  {(() => {
+                    const roomHeads = headsByRoom[r.id] ?? [];
+                    const showHeads = roomHeads.length > 0 || r.head_of_lab;
+                    if (!showHeads && !r.contact_phone) return null;
+                    return (
+                      <dl className="mt-3 space-y-1 border-t border-border/60 pt-3 text-xs">
+                        {showHeads && (
+                          <div className="flex gap-2">
+                            <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
+                              <UserRound className="h-3.5 w-3.5" /> {t("room_head")}
+                            </dt>
+                            <dd className="flex-1">
+                              {roomHeads.length > 0
+                                ? roomHeads.map((h) => (lang === "th" ? h.name_th : h.name_en)).join(", ")
+                                : r.head_of_lab}
+                            </dd>
+                          </div>
+                        )}
+                        {r.contact_phone && (
+                          <div className="flex gap-2">
+                            <dt className="flex w-28 shrink-0 items-center gap-1 text-muted-foreground">
+                              <Phone className="h-3.5 w-3.5" /> {t("room_phone")}
+                            </dt>
+                            <dd className="flex-1">
+                              <a href={`tel:${r.contact_phone.replace(/[^0-9+]/g, "")}`} className="hover:text-primary">
+                                {r.contact_phone}
+                              </a>
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    );
+                  })()}
+
 
                   <div className="mt-3 flex min-h-[2rem] flex-wrap gap-1.5 overflow-hidden">
                     {visibleChips.map((e, i) => (
