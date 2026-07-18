@@ -115,7 +115,7 @@ function RoomsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded px-3 py-1.5 transition ${filter === f ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-secondary"}`}
+              className={`rounded px-3 py-1.5 transition ${filter === f ? "bg-[color:var(--chula-pink)] text-white" : "text-foreground/70 hover:bg-secondary"}`}
             >
               {f === "all" ? t("rooms_filter_all") : f === "lab" ? t("rooms_filter_lab") : t("rooms_filter_pc")}
             </button>
