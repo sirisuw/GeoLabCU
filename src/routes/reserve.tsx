@@ -156,6 +156,10 @@ function ReservePage() {
     setSubmitting(true);
     const advisor = advisors.find((a) => a.id === payload.advisor_id);
     const advisorName = advisor ? `${advisor.name_th} (${advisor.name_en})` : "";
+    const sharedTrackingToken =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const rows = payload.room_ids.map((room_id) => {
       const sel = getEquip(room_id);
       const equipment_selected = [
@@ -180,6 +184,7 @@ function ReservePage() {
         student_id: null,
         confirmed_contact: payload.confirmed_contact,
         confirmed_calendar: payload.confirmed_calendar,
+        tracking_token: sharedTrackingToken,
       };
     });
     const { error } = await supabase.from("reservations").insert(rows as never);
@@ -189,6 +194,7 @@ function ReservePage() {
       return;
     }
     toast.success(t("f_success"));
+    setTrackingToken(sharedTrackingToken);
     setSuccess(true);
     // Kick the email queue so approval emails go out immediately
     processPendingEmails().catch(() => {});
