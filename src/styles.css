@@ -37,6 +37,8 @@
   --color-ring: var(--ring);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
+  --color-chula-pink: var(--chula-pink);
+  --color-chula-pink-soft: var(--chula-pink-soft);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --font-sans: "Prompt", ui-sans-serif, system-ui, sans-serif;
