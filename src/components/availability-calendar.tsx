@@ -182,9 +182,9 @@ export function AvailabilityCalendar({
               const today = new Date();
               const isToday = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
               return (
-                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-gold/15 text-foreground")}>
-                  <div className={cn(isToday && "text-gold")}>{weekdays[i]}</div>
-                  <div className={cn("text-muted-foreground", isToday && "font-semibold text-gold")}>{d.getDate()} {months[d.getMonth()]}</div>
+                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-[color:var(--chula-pink)]/10 text-foreground")}>
+                  <div className={cn(isToday && "text-[color:var(--chula-pink)] font-semibold")}>{weekdays[i]}</div>
+                  <div className={cn("text-muted-foreground", isToday && "font-semibold text-[color:var(--chula-pink)]")}>{d.getDate()} {months[d.getMonth()]}</div>
                 </div>
               );
             })}
