@@ -108,9 +108,9 @@ function FeatureCard({ img, eyebrow, title, to }: { img: string; eyebrow: string
   return (
     <Link to={to} className="group relative overflow-hidden rounded-xl border border-border bg-card">
       <img src={img} alt="" loading="lazy" width={1600} height={1000} className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/25 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground">
-        <p className="eyebrow text-gold">{eyebrow}</p>
+        <p className="eyebrow text-[color:var(--chula-pink)]">{eyebrow}</p>
         <h3 className="mt-1 text-xl font-semibold">{title}</h3>
       </div>
     </Link>
