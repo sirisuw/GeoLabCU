@@ -49,7 +49,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     const authorizationId = new URLSearchParams(location.search).get(
       "authorization_id",
     )!;
-    const client = supabase as SupabaseWithOAuth;
+    const client = supabase as unknown as SupabaseWithOAuth;
     const { data, error } =
       await client.auth.oauth.getAuthorizationDetails(authorizationId);
     if (error) throw new Error(error.message);
@@ -80,7 +80,7 @@ function Consent() {
   async function decide(approve: boolean) {
     setBusy(true);
     setError(null);
-    const client = supabase as SupabaseWithOAuth;
+    const client = supabase as unknown as SupabaseWithOAuth;
     const { data, error } = approve
       ? await client.auth.oauth.approveAuthorization(authorization_id)
       : await client.auth.oauth.denyAuthorization(authorization_id);
