@@ -4,30 +4,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck } from "lucide-react";
 
-type SupabaseWithOAuth = typeof supabase & {
-  auth: typeof supabase.auth & {
+type OAuthDetails = {
+  client?: { name?: string; client_id?: string };
+  redirect_uri?: string;
+  scopes?: string[];
+  redirect_url?: string;
+  redirect_to?: string;
+};
+type OAuthDecideResult = { redirect_url?: string; redirect_to?: string };
+
+type SupabaseWithOAuth = {
+  auth: {
     oauth: {
       getAuthorizationDetails: (id: string) => Promise<{
-        data: {
-          client?: { name?: string; client_id?: string };
-          redirect_uri?: string;
-          scopes?: string[];
-          redirect_url?: string;
-          redirect_to?: string;
-        } | null;
+        data: OAuthDetails | null;
         error: { message: string } | null;
       }>;
       approveAuthorization: (id: string) => Promise<{
-        data: { redirect_url?: string; redirect_to?: string } | null;
+        data: OAuthDecideResult | null;
         error: { message: string } | null;
       }>;
       denyAuthorization: (id: string) => Promise<{
-        data: { redirect_url?: string; redirect_to?: string } | null;
+        data: OAuthDecideResult | null;
         error: { message: string } | null;
       }>;
     };
   };
 };
+
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
