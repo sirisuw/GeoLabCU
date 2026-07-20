@@ -49,8 +49,8 @@ const formSchema = z.object({
   attendees: z.coerce.number().int().min(1).max(500),
   start_at: z.string().min(1),
   end_at: z.string().min(1),
-  confirmed_contact: z.literal(true, { errorMap: () => ({ message: "Please confirm you contacted the officer and advisor" }) }),
-  confirmed_calendar: z.literal(true, { errorMap: () => ({ message: "Please confirm you checked the calendar" }) }),
+  confirmed_contact: z.literal(true, { message: "Please confirm you contacted the officer and advisor" }),
+  confirmed_calendar: z.literal(true, { message: "Please confirm you checked the calendar" }),
 });
 
 type Advisor = { id: string; name_th: string; name_en: string; email: string | null };

@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://yieyftysiiulvnzltevd.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "geoculab-mcp",
+      "version": "0.1.0",
+      "title": "Geo Labs MCP"
+    },
+    "tools": [
+      {
+        "name": "list_rooms",
+        "title": "List rooms",
+        "description": "List all active laboratory and computer rooms in the Department of Geology, including their code, name, type, floor, and equipment.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "type": {
+              "description": "Filter by room type. Defaults to any.",
+              "type": "string",
+              "enum": [
+                "lab",
+                "pc",
+                "classroom",
+                "any"
+              ]
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_advisors",
+        "title": "List advisors",
+        "description": "List available faculty advisors (names only; contact emails are not exposed).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_reservation_status",
+        "title": "Get reservation status",
+        "description": "Look up a reservation's current approval status by its tracking token (the same token used on the public /status page).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "tracking_token": {
+              "type": "string",
+              "description": "The tracking token from the reservation confirmation."
+            }
+          },
+          "required": [
+            "tracking_token"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_reservations",
+        "title": "List reservations (admin)",
+        "description": "List reservations visible to the signed-in user. Admins see all reservations; other users see none. Filter by status when useful.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "Optional status filter (e.g. pending_advisor, pending_staff, pending_admin, confirmed, rejected).",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows to return. Defaults to 25.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

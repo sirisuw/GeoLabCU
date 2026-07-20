@@ -16,21 +16,34 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : "",
+  }),
   component: AuthPage,
 });
+
+// Only allow same-origin relative paths so a redirect target can't be forged.
+function safeNext(next: string): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
 
 function AuthPage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/admin" });
+      if (!data.session) return;
+      const target = safeNext(next);
+      if (target) window.location.replace(target);
+      else navigate({ to: "/admin" });
     });
-  }, [navigate]);
+  }, [navigate, next]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +51,9 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) return toast.error(error.message);
-    navigate({ to: "/admin" });
+    const target = safeNext(next);
+    if (target) window.location.replace(target);
+    else navigate({ to: "/admin" });
   };
 
   return (
