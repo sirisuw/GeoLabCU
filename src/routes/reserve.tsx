@@ -50,6 +50,7 @@ const formSchema = z.object({
   start_at: z.string().min(1),
   end_at: z.string().min(1),
   confirmed_calendar: z.literal(true, { message: "Please confirm you checked the calendar" }),
+  confirmed_rules: z.literal(true, { message: "Please confirm you have read and agree to the lab rules" }),
 });
 
 type Advisor = { id: string; name_th: string; name_en: string; email: string | null };
@@ -104,6 +105,7 @@ function ReservePage() {
     start_at: "",
     end_at: "",
     confirmed_calendar: false,
+    confirmed_rules: false,
   });
   const [equipByRoom, setEquipByRoom] = useState<Record<string, EquipSel>>({});
 
@@ -195,6 +197,7 @@ function ReservePage() {
         student_id: null,
         confirmed_contact: true,
         confirmed_calendar: payload.confirmed_calendar,
+        confirmed_rules: payload.confirmed_rules,
         tracking_token: sharedTrackingToken,
       };
     });
@@ -209,7 +212,7 @@ function ReservePage() {
     setSuccess(true);
     // Kick the email queue so approval emails go out immediately
     processPendingEmails().catch(() => {});
-    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_calendar: false }));
+    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_calendar: false, confirmed_rules: false }));
     setEquipByRoom({});
   };
 
@@ -441,6 +444,10 @@ function ReservePage() {
             <label className="flex items-start gap-3 text-sm cursor-pointer">
               <Checkbox checked={form.confirmed_calendar} onCheckedChange={(v) => set("confirmed_calendar", v === true)} className="mt-0.5" />
               <span>{t("f_confirm_calendar")}</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm cursor-pointer">
+              <Checkbox checked={form.confirmed_rules} onCheckedChange={(v) => set("confirmed_rules", v === true)} className="mt-0.5" />
+              <span>{t("f_confirm_rules")}</span>
             </label>
           </div>
 

@@ -70,6 +70,7 @@ export const dict = {
   f_confirm_title: { th: "ข้อกำหนดก่อนจองใช้ห้องปฏิบัติการ", en: "Pre-booking requirements" },
   f_confirm_contact: { th: "ข้าพเจ้าได้ติดต่อเจ้าหน้าที่และอาจารย์ที่ปรึกษาเรียบร้อยแล้ว", en: "I have contacted the officer and my advisor." },
   f_confirm_calendar: { th: "ข้าพเจ้าได้เช็คปฏิทินก่อนการจองใช้ห้องปฏิบัติการแล้ว", en: "I have checked the calendar before booking." },
+  f_confirm_rules: { th: "ข้าพเจ้าได้อ่านและยอมรับกฎการใช้ห้องปฏิบัติการแล้ว", en: "I have read and agree to the lab rules." },
   f_rules_title: { th: "กรุณาอ่านก่อนส่งคำขอ", en: "Please read before submitting" },
   f_rules_1: { th: "ระยะเวลาสูงสุดที่จองได้คือ 5 วันทำการติดต่อกันต่อครั้ง", en: "Maximum booking is 5 consecutive working days per request." },
   f_rules_2: { th: "หากต้องการยกเลิกหรือเปลี่ยนแปลง กรุณาแจ้งเจ้าหน้าที่ทางโทรศัพท์หรือด้วยวาจา มิฉะนั้นจะถูกระงับสิทธิ์ใช้ห้องปฏิบัติการทุกห้องเป็นเวลา 2 สัปดาห์", en: "To cancel or change, notify the operations officer by phone or in person. Otherwise, lab access will be suspended for 2 weeks." },
