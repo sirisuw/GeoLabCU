@@ -41,14 +41,14 @@ function RulesPage() {
           return (
             <li
               key={r.t}
-              className="flex gap-4 rounded-xl border border-border bg-card p-5 transition hover:border-gold"
+              className="flex gap-4 rounded-xl border border-border bg-card p-5 transition hover:border-chula-pink"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-chula-pink/10 text-chula-pink">
                 <Icon className="h-5 w-5" />
               </div>
               <div>
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="font-display text-xs font-semibold uppercase tracking-widest text-gold">
+                  <span className="font-display text-xs font-semibold uppercase tracking-widest text-chula-pink">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="text-base font-semibold">{t(r.t)}</h3>
