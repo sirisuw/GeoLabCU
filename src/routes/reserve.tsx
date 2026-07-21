@@ -193,7 +193,7 @@ function ReservePage() {
         equipment_selected,
         sample_count: payload.sample_count,
         student_id: null,
-        confirmed_contact: payload.confirmed_contact,
+        confirmed_contact: true,
         confirmed_calendar: payload.confirmed_calendar,
         tracking_token: sharedTrackingToken,
       };
