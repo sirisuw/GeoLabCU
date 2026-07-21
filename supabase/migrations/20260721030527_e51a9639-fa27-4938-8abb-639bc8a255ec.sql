@@ -1,0 +1,1 @@
+ALTER TABLE public.reservations ADD COLUMN IF NOT EXISTS confirmed_rules boolean NOT NULL DEFAULT false;
