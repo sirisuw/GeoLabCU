@@ -103,7 +103,6 @@ function ReservePage() {
     attendees: "1",
     start_at: "",
     end_at: "",
-    confirmed_contact: false,
     confirmed_calendar: false,
   });
   const [equipByRoom, setEquipByRoom] = useState<Record<string, EquipSel>>({});
