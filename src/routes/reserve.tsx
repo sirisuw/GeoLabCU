@@ -49,7 +49,6 @@ const formSchema = z.object({
   attendees: z.coerce.number().int().min(1).max(500),
   start_at: z.string().min(1),
   end_at: z.string().min(1),
-  confirmed_contact: z.literal(true, { message: "Please confirm you contacted the officer and advisor" }),
   confirmed_calendar: z.literal(true, { message: "Please confirm you checked the calendar" }),
 });
 
@@ -104,7 +103,6 @@ function ReservePage() {
     attendees: "1",
     start_at: "",
     end_at: "",
-    confirmed_contact: false,
     confirmed_calendar: false,
   });
   const [equipByRoom, setEquipByRoom] = useState<Record<string, EquipSel>>({});
@@ -195,7 +193,7 @@ function ReservePage() {
         equipment_selected,
         sample_count: payload.sample_count,
         student_id: null,
-        confirmed_contact: payload.confirmed_contact,
+        confirmed_contact: true,
         confirmed_calendar: payload.confirmed_calendar,
         tracking_token: sharedTrackingToken,
       };
@@ -211,7 +209,7 @@ function ReservePage() {
     setSuccess(true);
     // Kick the email queue so approval emails go out immediately
     processPendingEmails().catch(() => {});
-    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_contact: false, confirmed_calendar: false }));
+    setForm((f) => ({ ...f, requester_name: "", requester_email: "", requester_phone: "", sample_count: "", purpose: "", start_at: "", end_at: "", confirmed_calendar: false }));
     setEquipByRoom({});
   };
 
@@ -440,10 +438,6 @@ function ReservePage() {
 
           <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
             <p className="text-sm font-medium">{t("f_confirm_title")} <span className="text-destructive">*</span></p>
-            <label className="flex items-start gap-3 text-sm cursor-pointer">
-              <Checkbox checked={form.confirmed_contact} onCheckedChange={(v) => set("confirmed_contact", v === true)} className="mt-0.5" />
-              <span>{t("f_confirm_contact")}</span>
-            </label>
             <label className="flex items-start gap-3 text-sm cursor-pointer">
               <Checkbox checked={form.confirmed_calendar} onCheckedChange={(v) => set("confirmed_calendar", v === true)} className="mt-0.5" />
               <span>{t("f_confirm_calendar")}</span>
