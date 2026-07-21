@@ -44,6 +44,7 @@ function slotDate(day: Date, slotIdx: number) {
   return d;
 }
 function isWeekend(d: Date) { const w = d.getDay(); return w === 0 || w === 6; }
+function isClosed(d: Date) { return isWeekend(d) || isThaiHoliday(d); }
 
 export function AvailabilityCalendar({
   roomId,
@@ -105,12 +106,12 @@ export function AvailabilityCalendar({
     const now = new Date();
     const d = new Date(now); d.setHours(0, 0, 0, 0);
     if (now.getHours() >= 7) d.setDate(d.getDate() + 1);
-    while (isWeekend(d)) d.setDate(d.getDate() + 1);
+    while (isClosed(d)) d.setDate(d.getDate() + 1);
     return d;
   }, []);
 
   const isCutoff = (day: Date, slotIdx: number) => {
-    if (isWeekend(day)) return true;
+    if (isClosed(day)) return true;
     if (day < earliestAllowedDay) return true;
     const s = slotDate(day, slotIdx);
     return s.getTime() < Date.now();
@@ -284,11 +285,16 @@ export function AvailabilityCalendar({
               const today = new Date();
               const isToday = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
               const weekend = isWeekend(d);
+              const holiday = getHoliday(d);
+              const closed = weekend || !!holiday;
+              const closedLabel = holiday ? (lang === "th" ? holiday.name_th : holiday.name_en) : (lang === "th" ? "ปิดทำการ" : "Closed");
               return (
-                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-[color:var(--chula-pink)]/10 text-foreground", weekend && "opacity-60")}>
+                <div key={i} className={cn("px-1 pb-2 text-center text-xs font-medium", isToday && "rounded-md bg-[color:var(--chula-pink)]/10 text-foreground", closed && "opacity-60")}
+                  title={holiday ? closedLabel : undefined}
+                >
                   <div className={cn(isToday && "text-[color:var(--chula-pink)] font-semibold")}>{weekdays[i]}</div>
                   <div className={cn("text-muted-foreground", isToday && "font-semibold text-[color:var(--chula-pink)]")}>{d.getDate()} {months[d.getMonth()]}</div>
-                  {weekend && <div className="mt-0.5 text-[10px] text-muted-foreground">{lang === "th" ? "ปิดทำการ" : "Closed"}</div>}
+                  {closed && <div className={cn("mt-0.5 text-[10px] leading-tight", holiday ? "text-[color:var(--chula-pink)]" : "text-muted-foreground")}>{closedLabel}</div>}
                 </div>
               );
             })}
@@ -302,11 +308,13 @@ export function AvailabilityCalendar({
                   </div>
                   {days.map((d, dayIdx) => {
                     const weekend = isWeekend(d);
-                    const r = roomId && !weekend ? isBooked(d, slotIdx) : null;
-                    const cutoff = !weekend && isCutoff(d, slotIdx);
+                    const holiday = getHoliday(d);
+                    const closed = weekend || !!holiday;
+                    const r = roomId && !closed ? isBooked(d, slotIdx) : null;
+                    const cutoff = !closed && isCutoff(d, slotIdx);
                     const selected = inSelection(dayIdx, slotIdx);
-                    const disabled = !roomId || weekend || !!r || cutoff;
-                    const cls = weekend
+                    const disabled = !roomId || closed || !!r || cutoff;
+                    const cls = closed
                       ? "bg-muted/20 cursor-not-allowed"
                       : !roomId
                       ? "bg-muted/40"
@@ -317,6 +325,7 @@ export function AvailabilityCalendar({
                       : r
                       ? r.status === "approved" || r.status === "confirmed" ? "bg-destructive/70" : "bg-gold/70"
                       : "bg-muted hover:bg-[color:var(--chula-pink)]/25 cursor-pointer";
+                    const closedTitle = holiday ? (lang === "th" ? holiday.name_th : holiday.name_en) : (lang === "th" ? "ปิดทำการ" : "Closed");
                     return (
                       <button
                         key={`c-${d.toISOString()}-${label}`}
@@ -324,7 +333,7 @@ export function AvailabilityCalendar({
                         disabled={disabled}
                         onPointerDown={(e) => { if (disabled) return; e.preventDefault(); onSlotDown(dayIdx, slotIdx); }}
                         onPointerEnter={() => { if (!disabled) onSlotEnter(dayIdx, slotIdx); }}
-                        title={weekend ? (lang === "th" ? "ปิดทำการ" : "Closed") : `${label} — ${cutoff ? t("cal_cutoff_rule") : r ? (r.status === "approved" || r.status === "confirmed" ? t("cal_booked") : t("cal_pending")) : t("cal_free")}`}
+                        title={closed ? closedTitle : `${label} — ${cutoff ? t("cal_cutoff_rule") : r ? (r.status === "approved" || r.status === "confirmed" ? t("cal_booked") : t("cal_pending")) : t("cal_free")}`}
                         className={cn("m-[1px] h-7 rounded-sm border transition-colors touch-none", isHourStart ? "border-border/50" : "border-border/20", cls)}
                       />
                     );
