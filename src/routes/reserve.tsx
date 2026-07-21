@@ -439,10 +439,6 @@ function ReservePage() {
           <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
             <p className="text-sm font-medium">{t("f_confirm_title")} <span className="text-destructive">*</span></p>
             <label className="flex items-start gap-3 text-sm cursor-pointer">
-              <Checkbox checked={form.confirmed_contact} onCheckedChange={(v) => set("confirmed_contact", v === true)} className="mt-0.5" />
-              <span>{t("f_confirm_contact")}</span>
-            </label>
-            <label className="flex items-start gap-3 text-sm cursor-pointer">
               <Checkbox checked={form.confirmed_calendar} onCheckedChange={(v) => set("confirmed_calendar", v === true)} className="mt-0.5" />
               <span>{t("f_confirm_calendar")}</span>
             </label>
