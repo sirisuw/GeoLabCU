@@ -7,6 +7,7 @@ import { CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { processPendingEmails } from "@/lib/emails.functions";
+import { getHoliday, isThaiHoliday } from "@/lib/thai-holidays";
 
 
 import { Button } from "@/components/ui/button";
@@ -62,13 +63,13 @@ function ReservePage() {
   const [success, setSuccess] = useState(false);
   const [trackingToken, setTrackingToken] = useState<string | null>(null);
 
-  // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow. Weekends skipped.
+  // Earliest allowed booking date. Before 7 AM → today; from 7 AM onward → tomorrow. Weekends/holidays skipped.
   const earliestAllowed = (() => {
     const now = new Date();
     const d = new Date(now);
     d.setHours(0, 0, 0, 0);
     if (now.getHours() >= 7) d.setDate(d.getDate() + 1);
-    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+    while (d.getDay() === 0 || d.getDay() === 6 || isThaiHoliday(d)) d.setDate(d.getDate() + 1);
     return d;
   })();
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -146,6 +147,15 @@ function ReservePage() {
     const endD = new Date(payload.end_at);
     if ([0, 6].includes(startD.getDay()) || [0, 6].includes(endD.getDay())) {
       toast.error(lang === "th" ? "ไม่สามารถจองวันเสาร์-อาทิตย์ได้" : "Weekend bookings are not available");
+      return;
+    }
+    const holiday = getHoliday(startD) ?? getHoliday(endD);
+    if (holiday) {
+      toast.error(
+        lang === "th"
+          ? `ไม่สามารถจองในวันหยุด: ${holiday.name_th}`
+          : `Cannot book on a Thai public holiday: ${holiday.name_en}`,
+      );
       return;
     }
     const sMin = startD.getHours() * 60 + startD.getMinutes();
