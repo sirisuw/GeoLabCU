@@ -231,6 +231,7 @@ export type Database = {
           completed_at: string | null
           confirmed_calendar: boolean
           confirmed_contact: boolean
+          confirmed_rules: boolean
           created_at: string
           department: string | null
           end_at: string
@@ -281,6 +282,7 @@ export type Database = {
           completed_at?: string | null
           confirmed_calendar?: boolean
           confirmed_contact?: boolean
+          confirmed_rules?: boolean
           created_at?: string
           department?: string | null
           end_at: string
@@ -331,6 +333,7 @@ export type Database = {
           completed_at?: string | null
           confirmed_calendar?: boolean
           confirmed_contact?: boolean
+          confirmed_rules?: boolean
           created_at?: string
           department?: string | null
           end_at?: string
