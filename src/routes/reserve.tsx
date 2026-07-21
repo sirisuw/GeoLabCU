@@ -7,6 +7,7 @@ import { CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { processPendingEmails } from "@/lib/emails.functions";
+import { getHoliday, isThaiHoliday } from "@/lib/thai-holidays";
 
 
 import { Button } from "@/components/ui/button";
