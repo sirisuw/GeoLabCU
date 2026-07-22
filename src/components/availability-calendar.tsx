@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getHoliday, isThaiHoliday } from "@/lib/thai-holidays";
+import { useHolidays, getHolidayFrom, isWorkingDayFrom } from "@/hooks/use-holidays";
 
 type Reservation = { id: string; start_at: string; end_at: string; status: string };
 
