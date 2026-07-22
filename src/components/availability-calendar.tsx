@@ -44,7 +44,6 @@ function slotDate(day: Date, slotIdx: number) {
   return d;
 }
 function isWeekend(d: Date) { const w = d.getDay(); return w === 0 || w === 6; }
-function isClosed(d: Date) { return isWeekend(d) || isThaiHoliday(d); }
 
 export function AvailabilityCalendar({
   roomId,
@@ -60,6 +59,8 @@ export function AvailabilityCalendar({
   maxDurationMinutes?: number;
 }) {
   const { t, lang } = useI18n();
+  const holidayMap = useHolidays();
+  const isClosed = (d: Date) => !isWorkingDayFrom(holidayMap, d);
   const [hydrated, setHydrated] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const weekEnd = useMemo(() => addDays(weekStart, DAYS), [weekStart]);
@@ -285,7 +286,7 @@ export function AvailabilityCalendar({
               const today = new Date();
               const isToday = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
               const weekend = isWeekend(d);
-              const holiday = getHoliday(d);
+              const holiday = getHolidayFrom(holidayMap, d);
               const closed = weekend || !!holiday;
               const closedLabel = holiday ? (lang === "th" ? holiday.name_th : holiday.name_en) : (lang === "th" ? "ปิดทำการ" : "Closed");
               return (
@@ -308,7 +309,7 @@ export function AvailabilityCalendar({
                   </div>
                   {days.map((d, dayIdx) => {
                     const weekend = isWeekend(d);
-                    const holiday = getHoliday(d);
+                    const holiday = getHolidayFrom(holidayMap, d);
                     const closed = weekend || !!holiday;
                     const r = roomId && !closed ? isBooked(d, slotIdx) : null;
                     const cutoff = !closed && isCutoff(d, slotIdx);
