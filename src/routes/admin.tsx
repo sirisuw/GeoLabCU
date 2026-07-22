@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, X, LogOut, CalendarDays, Users, Mail, Phone, Building2, Inbox, ChevronDown, ChevronRight, Settings, Send } from "lucide-react";
+import { Check, X, LogOut, CalendarDays, Users, Mail, Phone, Building2, Inbox, ChevronDown, ChevronRight, Settings, Send, Calendar as CalendarIcon, Trash2, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,7 @@ function AdminPage() {
       )}
 
       <SettingsPanel />
+      <HolidaysPanel />
       <RoleAssigner />
       <PendingEmailsPanel />
     </div>
@@ -427,6 +428,126 @@ function SettingsPanel() {
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return <div className="flex items-center gap-1.5 text-muted-foreground"><span className="text-gold">{icon}</span>{text}</div>;
 }
+
+type Holiday = { id: string; date: string; name_th: string; name_en: string };
+
+function HolidaysPanel() {
+  const { lang } = useI18n();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [newDate, setNewDate] = useState("");
+  const [newTh, setNewTh] = useState("");
+  const [newEn, setNewEn] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const { data: holidays = [], isLoading } = useQuery({
+    queryKey: ["holidays_admin"],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("holidays" as never).select("*").order("date");
+      if (error) throw error;
+      return data as unknown as Holiday[];
+    },
+  });
+
+  const add = async () => {
+    if (!newDate || !newTh.trim() || !newEn.trim()) {
+      return toast.error(lang === "th" ? "กรอกให้ครบ" : "Fill all fields");
+    }
+    setBusy(true);
+    const { error } = await supabase.from("holidays" as never).insert({ date: newDate, name_th: newTh.trim(), name_en: newEn.trim() } as never);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(lang === "th" ? "เพิ่มแล้ว" : "Added");
+    setNewDate(""); setNewTh(""); setNewEn("");
+    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
+    qc.invalidateQueries({ queryKey: ["holidays"] });
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm(lang === "th" ? "ลบวันหยุดนี้?" : "Delete this holiday?")) return;
+    const { error } = await supabase.from("holidays" as never).delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(lang === "th" ? "ลบแล้ว" : "Deleted");
+    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
+    qc.invalidateQueries({ queryKey: ["holidays"] });
+  };
+
+  const update = async (id: string, patch: Partial<Holiday>) => {
+    const { error } = await supabase.from("holidays" as never).update(patch as never).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
+    qc.invalidateQueries({ queryKey: ["holidays"] });
+  };
+
+  const grouped = useMemoGroupByYear(holidays);
+
+  return (
+    <section className="mt-6 rounded-xl border border-border bg-card">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between p-5 text-left">
+        <div className="flex items-center gap-3">
+          <CalendarIcon className="h-5 w-5 text-[color:var(--chula-pink)]" />
+          <div>
+            <h2 className="text-lg font-semibold">{lang === "th" ? "วันหยุดนักขัตฤกษ์" : "Public holidays"}</h2>
+            <p className="text-xs text-muted-foreground">
+              {lang === "th"
+                ? "จัดการวันหยุด — ระบบจะปิดปฏิทินและป้องกันการจองในวันเหล่านี้ทันที"
+                : "Manage holidays — the calendar and booking validation update immediately."}
+            </p>
+          </div>
+        </div>
+        {open ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+      </button>
+      {open && (
+        <div className="border-t border-border p-5">
+          <div className="mb-5 grid gap-2 rounded-md border border-dashed border-border bg-background p-3 md:grid-cols-[160px_1fr_1fr_auto]">
+            <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+            <Input placeholder={lang === "th" ? "ชื่อภาษาไทย" : "Thai name"} value={newTh} onChange={(e) => setNewTh(e.target.value)} />
+            <Input placeholder="English name" value={newEn} onChange={(e) => setNewEn(e.target.value)} />
+            <Button onClick={add} disabled={busy}><Plus className="mr-1 h-4 w-4" />{lang === "th" ? "เพิ่ม" : "Add"}</Button>
+          </div>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">…</p>
+          ) : holidays.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{lang === "th" ? "ยังไม่มีวันหยุด" : "No holidays yet."}</p>
+          ) : (
+            <div className="space-y-6">
+              {grouped.map(([year, items]) => (
+                <div key={year}>
+                  <h3 className="mb-2 text-sm font-semibold text-[color:var(--chula-pink)]">{year} <span className="ml-2 text-xs font-normal text-muted-foreground">{items.length} {lang === "th" ? "วัน" : "days"}</span></h3>
+                  <div className="space-y-2">
+                    {items.map((h) => (
+                      <div key={h.id} className="grid gap-2 rounded-md border border-border bg-background p-3 md:grid-cols-[140px_1fr_1fr_40px]">
+                        <Input type="date" defaultValue={h.date} onBlur={(e) => e.target.value !== h.date && update(h.id, { date: e.target.value })} />
+                        <Input defaultValue={h.name_th} onBlur={(e) => e.target.value !== h.name_th && update(h.id, { name_th: e.target.value })} />
+                        <Input defaultValue={h.name_en} onBlur={(e) => e.target.value !== h.name_en && update(h.id, { name_en: e.target.value })} />
+                        <Button size="icon" variant="ghost" onClick={() => remove(h.id)} aria-label="delete">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function useMemoGroupByYear(items: Holiday[]): Array<[string, Holiday[]]> {
+  const map = new Map<string, Holiday[]>();
+  for (const h of items) {
+    const y = h.date.slice(0, 4);
+    const arr = map.get(y) ?? [];
+    arr.push(h);
+    map.set(y, arr);
+  }
+  return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+}
+
 
 function StatusBadge({ status }: { status: Reservation["status"] }) {
   const map: Record<Reservation["status"], string> = {
