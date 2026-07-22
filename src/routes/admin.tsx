@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, X, LogOut, CalendarDays, Users, Mail, Phone, Building2, Inbox, ChevronDown, ChevronRight, Settings, Send } from "lucide-react";
+import { Check, X, LogOut, CalendarDays, Users, Mail, Phone, Building2, Inbox, ChevronDown, ChevronRight, Settings, Send, Calendar as CalendarIcon, Trash2, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,7 @@ function AdminPage() {
       )}
 
       <SettingsPanel />
+      <HolidaysPanel />
       <RoleAssigner />
       <PendingEmailsPanel />
     </div>
