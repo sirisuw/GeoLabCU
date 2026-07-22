@@ -98,6 +98,33 @@ export type Database = {
           },
         ]
       }
+      holidays: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          name_en: string
+          name_th: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          name_en: string
+          name_th: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          name_en?: string
+          name_th?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       no_show_counters: {
         Row: {
           count: number
@@ -701,6 +728,7 @@ export type Database = {
       }
     }
     Functions: {
+      add_working_days: { Args: { n: number; ts: string }; Returns: string }
       can_manage_room: {
         Args: { _room_id: string; _user_id: string }
         Returns: boolean
@@ -714,6 +742,7 @@ export type Database = {
         }
         Returns: Json
       }
+      earliest_booking_start: { Args: never; Returns: string }
       get_reservation_by_token: {
         Args: { _role: string; _token: string }
         Returns: {
@@ -765,6 +794,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_working_day: { Args: { d: string }; Returns: boolean }
       render_reservation_details: {
         Args: {
           r: Database["public"]["Tables"]["reservations"]["Row"]
@@ -774,6 +804,7 @@ export type Database = {
         Returns: string
       }
       run_reservation_maintenance: { Args: never; Returns: number }
+      working_days_between: { Args: { e: string; s: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user" | "ta" | "lab_officer"
