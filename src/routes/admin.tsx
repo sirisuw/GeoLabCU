@@ -429,39 +429,73 @@ function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return <div className="flex items-center gap-1.5 text-muted-foreground"><span className="text-gold">{icon}</span>{text}</div>;
 }
 
-type Holiday = { id: string; date: string; name_th: string; name_en: string };
+type Holiday = {
+  id: string;
+  date: string | null;
+  name_th: string;
+  name_en: string;
+  recurring: boolean;
+  month: number | null;
+  day: number | null;
+};
+
+const TH_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
 function HolidaysPanel() {
   const { lang } = useI18n();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<"recurring" | "dated">("recurring");
+  const [busy, setBusy] = useState(false);
+
+  // New-row inputs
   const [newDate, setNewDate] = useState("");
+  const [newMonth, setNewMonth] = useState<string>("");
+  const [newDay, setNewDay] = useState<string>("");
   const [newTh, setNewTh] = useState("");
   const [newEn, setNewEn] = useState("");
-  const [busy, setBusy] = useState(false);
 
   const { data: holidays = [], isLoading } = useQuery({
     queryKey: ["holidays_admin"],
     enabled: open,
     queryFn: async () => {
-      const { data, error } = await supabase.from("holidays" as never).select("*").order("date");
+      const { data, error } = await supabase
+        .from("holidays" as never)
+        .select("id, date, name_th, name_en, recurring, month, day")
+        .order("recurring", { ascending: false });
       if (error) throw error;
       return data as unknown as Holiday[];
     },
   });
 
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
+    qc.invalidateQueries({ queryKey: ["holidays"] });
+  };
+
   const add = async () => {
-    if (!newDate || !newTh.trim() || !newEn.trim()) {
-      return toast.error(lang === "th" ? "กรอกให้ครบ" : "Fill all fields");
+    if (!newTh.trim() || !newEn.trim()) {
+      return toast.error(lang === "th" ? "กรอกชื่อให้ครบ" : "Enter both names");
+    }
+    let payload: Record<string, unknown>;
+    if (tab === "recurring") {
+      const m = parseInt(newMonth, 10);
+      const d = parseInt(newDay, 10);
+      if (!m || !d || m < 1 || m > 12 || d < 1 || d > 31) {
+        return toast.error(lang === "th" ? "เดือน/วัน ไม่ถูกต้อง" : "Invalid month/day");
+      }
+      payload = { recurring: true, month: m, day: d, date: null, name_th: newTh.trim(), name_en: newEn.trim() };
+    } else {
+      if (!newDate) return toast.error(lang === "th" ? "เลือกวันที่" : "Pick a date");
+      payload = { recurring: false, date: newDate, month: null, day: null, name_th: newTh.trim(), name_en: newEn.trim() };
     }
     setBusy(true);
-    const { error } = await supabase.from("holidays" as never).insert({ date: newDate, name_th: newTh.trim(), name_en: newEn.trim() } as never);
+    const { error } = await supabase.from("holidays" as never).insert(payload as never);
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(lang === "th" ? "เพิ่มแล้ว" : "Added");
-    setNewDate(""); setNewTh(""); setNewEn("");
-    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
-    qc.invalidateQueries({ queryKey: ["holidays"] });
+    setNewDate(""); setNewMonth(""); setNewDay(""); setNewTh(""); setNewEn("");
+    invalidate();
   };
 
   const remove = async (id: string) => {
@@ -469,18 +503,24 @@ function HolidaysPanel() {
     const { error } = await supabase.from("holidays" as never).delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(lang === "th" ? "ลบแล้ว" : "Deleted");
-    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
-    qc.invalidateQueries({ queryKey: ["holidays"] });
+    invalidate();
   };
 
   const update = async (id: string, patch: Partial<Holiday>) => {
     const { error } = await supabase.from("holidays" as never).update(patch as never).eq("id", id);
     if (error) return toast.error(error.message);
-    qc.invalidateQueries({ queryKey: ["holidays_admin"] });
-    qc.invalidateQueries({ queryKey: ["holidays"] });
+    invalidate();
   };
 
-  const grouped = useMemoGroupByYear(holidays);
+  const recurring = holidays.filter((h) => h.recurring)
+    .sort((a, b) => (a.month! - b.month!) || (a.day! - b.day!));
+  const dated = holidays.filter((h) => !h.recurring);
+  const groupedDated = useMemoGroupByYear(dated);
+
+  const recurringLabel = (h: Holiday) =>
+    lang === "th"
+      ? `${h.day} ${TH_MONTHS_SHORT[(h.month ?? 1) - 1]} — ทุกปี`
+      : `${String(h.month).padStart(2, "0")}-${String(h.day).padStart(2, "0")} — every year`;
 
   return (
     <section className="mt-6 rounded-xl border border-border bg-card">
@@ -500,36 +540,95 @@ function HolidaysPanel() {
       </button>
       {open && (
         <div className="border-t border-border p-5">
-          <div className="mb-5 grid gap-2 rounded-md border border-dashed border-border bg-background p-3 md:grid-cols-[160px_1fr_1fr_auto]">
-            <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
-            <Input placeholder={lang === "th" ? "ชื่อภาษาไทย" : "Thai name"} value={newTh} onChange={(e) => setNewTh(e.target.value)} />
-            <Input placeholder="English name" value={newEn} onChange={(e) => setNewEn(e.target.value)} />
-            <Button onClick={add} disabled={busy}><Plus className="mr-1 h-4 w-4" />{lang === "th" ? "เพิ่ม" : "Add"}</Button>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setTab("recurring")}
+              className={`rounded-md border px-3 py-1.5 text-sm ${tab === "recurring" ? "border-[color:var(--chula-pink)] bg-[color:var(--chula-pink)]/10 font-semibold text-[color:var(--chula-pink)]" : "border-border text-muted-foreground"}`}
+            >
+              {lang === "th" ? "วันหยุดประจำปี" : "Recurring"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("dated")}
+              className={`rounded-md border px-3 py-1.5 text-sm ${tab === "dated" ? "border-[color:var(--chula-pink)] bg-[color:var(--chula-pink)]/10 font-semibold text-[color:var(--chula-pink)]" : "border-border text-muted-foreground"}`}
+            >
+              {lang === "th" ? "วันหยุดเฉพาะปี" : "Dated"}
+            </button>
           </div>
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">…</p>
-          ) : holidays.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{lang === "th" ? "ยังไม่มีวันหยุด" : "No holidays yet."}</p>
-          ) : (
-            <div className="space-y-6">
-              {grouped.map(([year, items]) => (
-                <div key={year}>
-                  <h3 className="mb-2 text-sm font-semibold text-[color:var(--chula-pink)]">{year} <span className="ml-2 text-xs font-normal text-muted-foreground">{items.length} {lang === "th" ? "วัน" : "days"}</span></h3>
-                  <div className="space-y-2">
-                    {items.map((h) => (
-                      <div key={h.id} className="grid gap-2 rounded-md border border-border bg-background p-3 md:grid-cols-[140px_1fr_1fr_40px]">
-                        <Input type="date" defaultValue={h.date} onBlur={(e) => e.target.value !== h.date && update(h.id, { date: e.target.value })} />
-                        <Input defaultValue={h.name_th} onBlur={(e) => e.target.value !== h.name_th && update(h.id, { name_th: e.target.value })} />
-                        <Input defaultValue={h.name_en} onBlur={(e) => e.target.value !== h.name_en && update(h.id, { name_en: e.target.value })} />
-                        <Button size="icon" variant="ghost" onClick={() => remove(h.id)} aria-label="delete">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+
+          <p className="mb-4 rounded-md border border-dashed border-border bg-background p-3 text-xs text-muted-foreground">
+            {lang === "th"
+              ? "วันหยุดตามปฏิทินจันทรคติ (เช่น วิสาขบูชา อาสาฬหบูชา) และวันหยุดชดเชย ต้องเพิ่มเป็นรายปีในแท็บ “วันหยุดเฉพาะปี” เพราะวันที่เปลี่ยนทุกปี"
+              : "Lunar-calendar Buddhist holidays and cabinet-announced substitution days must be added per year under the “Dated” tab because their dates shift annually."}
+          </p>
+
+          {tab === "recurring" ? (
+            <>
+              <div className="mb-5 grid gap-2 rounded-md border border-dashed border-border bg-background p-3 md:grid-cols-[80px_80px_1fr_1fr_auto]">
+                <Input type="number" min={1} max={12} placeholder={lang === "th" ? "เดือน" : "MM"} value={newMonth} onChange={(e) => setNewMonth(e.target.value)} />
+                <Input type="number" min={1} max={31} placeholder={lang === "th" ? "วัน" : "DD"} value={newDay} onChange={(e) => setNewDay(e.target.value)} />
+                <Input placeholder={lang === "th" ? "ชื่อภาษาไทย" : "Thai name"} value={newTh} onChange={(e) => setNewTh(e.target.value)} />
+                <Input placeholder="English name" value={newEn} onChange={(e) => setNewEn(e.target.value)} />
+                <Button onClick={add} disabled={busy}><Plus className="mr-1 h-4 w-4" />{lang === "th" ? "เพิ่ม" : "Add"}</Button>
+              </div>
+              {isLoading ? (
+                <p className="text-sm text-muted-foreground">…</p>
+              ) : recurring.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{lang === "th" ? "ยังไม่มีวันหยุดประจำปี" : "No recurring holidays yet."}</p>
+              ) : (
+                <div className="space-y-2">
+                  {recurring.map((h) => (
+                    <div key={h.id} className="grid gap-2 rounded-md border border-border bg-background p-3 md:grid-cols-[80px_80px_1fr_1fr_140px_40px]">
+                      <Input type="number" min={1} max={12} defaultValue={h.month ?? ""} onBlur={(e) => Number(e.target.value) !== h.month && update(h.id, { month: Number(e.target.value) })} />
+                      <Input type="number" min={1} max={31} defaultValue={h.day ?? ""} onBlur={(e) => Number(e.target.value) !== h.day && update(h.id, { day: Number(e.target.value) })} />
+                      <Input defaultValue={h.name_th} onBlur={(e) => e.target.value !== h.name_th && update(h.id, { name_th: e.target.value })} />
+                      <Input defaultValue={h.name_en} onBlur={(e) => e.target.value !== h.name_en && update(h.id, { name_en: e.target.value })} />
+                      <div className="flex items-center px-2 text-xs text-muted-foreground">{recurringLabel(h)}</div>
+                      <Button size="icon" variant="ghost" onClick={() => remove(h.id)} aria-label="delete">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mb-5 grid gap-2 rounded-md border border-dashed border-border bg-background p-3 md:grid-cols-[160px_1fr_1fr_auto]">
+                <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+                <Input placeholder={lang === "th" ? "ชื่อภาษาไทย" : "Thai name"} value={newTh} onChange={(e) => setNewTh(e.target.value)} />
+                <Input placeholder="English name" value={newEn} onChange={(e) => setNewEn(e.target.value)} />
+                <Button onClick={add} disabled={busy}><Plus className="mr-1 h-4 w-4" />{lang === "th" ? "เพิ่ม" : "Add"}</Button>
+              </div>
+              {isLoading ? (
+                <p className="text-sm text-muted-foreground">…</p>
+              ) : dated.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{lang === "th" ? "ยังไม่มีวันหยุดเฉพาะปี" : "No dated holidays yet."}</p>
+              ) : (
+                <div className="space-y-6">
+                  {groupedDated.map(([year, items]) => (
+                    <div key={year}>
+                      <h3 className="mb-2 text-sm font-semibold text-[color:var(--chula-pink)]">
+                        {year} <span className="ml-2 text-xs font-normal text-muted-foreground">{items.length} {lang === "th" ? "วัน" : "days"}</span>
+                      </h3>
+                      <div className="space-y-2">
+                        {items.map((h) => (
+                          <div key={h.id} className="grid gap-2 rounded-md border border-border bg-background p-3 md:grid-cols-[140px_1fr_1fr_40px]">
+                            <Input type="date" defaultValue={h.date ?? ""} onBlur={(e) => e.target.value !== h.date && update(h.id, { date: e.target.value })} />
+                            <Input defaultValue={h.name_th} onBlur={(e) => e.target.value !== h.name_th && update(h.id, { name_th: e.target.value })} />
+                            <Input defaultValue={h.name_en} onBlur={(e) => e.target.value !== h.name_en && update(h.id, { name_en: e.target.value })} />
+                            <Button size="icon" variant="ghost" onClick={() => remove(h.id)} aria-label="delete">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -540,6 +639,7 @@ function HolidaysPanel() {
 function useMemoGroupByYear(items: Holiday[]): Array<[string, Holiday[]]> {
   const map = new Map<string, Holiday[]>();
   for (const h of items) {
+    if (!h.date) continue;
     const y = h.date.slice(0, 4);
     const arr = map.get(y) ?? [];
     arr.push(h);
@@ -547,6 +647,7 @@ function useMemoGroupByYear(items: Holiday[]): Array<[string, Holiday[]]> {
   }
   return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
 }
+
 
 
 function StatusBadge({ status }: { status: Reservation["status"] }) {
